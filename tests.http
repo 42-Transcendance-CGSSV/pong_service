@@ -1,0 +1,14 @@
+### Test healthcheck
+GET http://localhost:3000/api/healthcheck HTTP/1.1
+
+### Test positions
+GET http://localhost:3000/api/positions HTTP/1.1
+
+### Test player info
+GET http://localhost:3000/api/player/1 HTTP/1.1
+
+### Test stop game
+PUT http://localhost:3000/api/stopGame HTTP/1.1
+
+### Test start game
+PUT http://localhost:3000/api/startGame HTTP/1.1
