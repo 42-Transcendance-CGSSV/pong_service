@@ -1,5 +1,6 @@
-import { getAllPositions , getPlayerInfo , startGame ,stopGame} from "../utils/sendItems";
+import { getAllPositions , getPlayerInfo , startGame ,stopGame ,movePlayerUP, movePlayerDown} from "../utils/sendItems";
 import { FastifyInstance } from "fastify";
+import rateLimit from '@fastify/rate-limit';
 
 const pongPositions = {
     schema: {
@@ -19,6 +20,8 @@ const pongPositions = {
                                 properties: {
                                     PlayerID        :  { type: "number" },
                                     PaddlePos       :  { type: "number" },
+                                    side            :  { type: "string" },
+                                    
                                 },
                             },
                         },
@@ -60,16 +63,22 @@ const playerInfo = {
 
 
 
-function pongController(fastify: FastifyInstance, _options: any, done: () => void)
+export function pongController(fastify: FastifyInstance, _options: any, done: () => void)
 {
+
+    fastify.register(rateLimit, {
+        max: 30,
+        timeWindow: '1 second'
+    });
+
     fastify.get(process.env.BASE_ROUTE + "/positions", pongPositions);
     
     fastify.get(process.env.BASE_ROUTE + "/player/:PlayerID", playerInfo);
 
     fastify.put(process.env.BASE_ROUTE + "/stopGame", stopGame);
     fastify.put(process.env.BASE_ROUTE + "/startGame", startGame);
+    fastify.put(process.env.BASE_ROUTE + "/movePlayerUp/:PlayerID", movePlayerUP);
+    fastify.put(process.env.BASE_ROUTE + "/movePlayerDown/:PlayerID", movePlayerDown);
     
     done();
 }
-
-export default pongController;

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.startGame = exports.stopGame = exports.getPlayerInfo = exports.getAllPositions = void 0;
+exports.movePlayerDown = exports.movePlayerUP = exports.startGame = exports.stopGame = exports.getPlayerInfo = exports.getAllPositions = void 0;
 const pongEngine_1 = require("../pongEngine");
 const getAllPositions = (_request, reply) => {
     // console.log(Engine.getBallInfo(0));
@@ -10,14 +10,12 @@ exports.getAllPositions = getAllPositions;
 const getPlayerInfo = (request, reply) => {
     var _a;
     const { PlayerID } = request.params;
-    const item = pongEngine_1.Engine.ball[0].players.find((item) => item.getID() === Number(PlayerID));
-    console.log("PlayerID from params:", typeof PlayerID, PlayerID);
-    console.log(`item ` + item);
-    if (item) {
-        reply.send(item);
+    const player = pongEngine_1.Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
+    if (player) {
+        reply.send(player);
     }
     else {
-        reply.status(404).send({ message: (_a = request.params) !== null && _a !== void 0 ? _a : 0 + " " + PlayerID + " Item not found" });
+        reply.status(404).send({ message: (_a = request.params) !== null && _a !== void 0 ? _a : 0 + " " + PlayerID + " player not found" });
     }
 };
 exports.getPlayerInfo = getPlayerInfo;
@@ -29,3 +27,27 @@ const startGame = (_request, _reply) => {
     pongEngine_1.Engine.startGameLoop();
 };
 exports.startGame = startGame;
+const movePlayerUP = (request, reply) => {
+    const { PlayerID } = request.params;
+    const player = pongEngine_1.Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
+    if (player) {
+        player.moveUp();
+        reply.send({ success: true });
+    }
+    else {
+        reply.status(404).send({ success: false, message: "Player not found" });
+    }
+};
+exports.movePlayerUP = movePlayerUP;
+const movePlayerDown = (request, reply) => {
+    const { PlayerID } = request.params;
+    const player = pongEngine_1.Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
+    if (player) {
+        player.moveDown();
+        reply.send({ success: true });
+    }
+    else {
+        reply.status(404).send({ success: false, message: "Player not found" });
+    }
+};
+exports.movePlayerDown = movePlayerDown;

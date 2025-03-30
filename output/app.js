@@ -3,14 +3,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const static_1 = __importDefault(require("@fastify/static"));
+const path_1 = __importDefault(require("path"));
 const fastify_1 = __importDefault(require("fastify"));
 const dotenv_1 = __importDefault(require("dotenv"));
 // import items from "./items";
-const controllerPong_1 = __importDefault(require("./controllers/controllerPong"));
+const controllerPong_1 = require("./controllers/controllerPong");
 const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
 const swagger_1 = __importDefault(require("@fastify/swagger"));
 const app = (0, fastify_1.default)({ logger: true, ajv: { customOptions: { removeAdditional: "all" } } });
-app.register(controllerPong_1.default);
+app.register(controllerPong_1.pongController);
 app.register(swagger_1.default, {
     swagger: {
         info: {
@@ -26,6 +28,10 @@ app.register(swagger_ui_1.default, {
         docExpansion: 'full',
         deepLinking: false,
     }
+});
+app.register(static_1.default, {
+    root: path_1.default.join(__dirname, '../public'),
+    prefix: '/', // so it serves at http://localhost:3000/
 });
 dotenv_1.default.config();
 //TODO: FIXING ENV UNDEFINED

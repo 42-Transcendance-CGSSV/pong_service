@@ -10,12 +10,13 @@ dotenv_1.default.config();
 let timeMultiplier = Number(process.env.TIME_MULTIPLIER);
 class Player {
     // public AI?: AI = undefined;
-    constructor(playerID, PaddlePos, PaddleHeight, canvasHeight, moveSpeed, side) {
+    constructor(playerID, PaddlePos, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side) {
         this.numberOfGoals = 0;
         this.playerColor = (0, getRandomColor_1.getRandomColor)();
         this.PlayerID = playerID;
         this.PaddlePos = PaddlePos;
         this.PaddleHeight = PaddleHeight;
+        this.PaddleWidth = PaddleWidth;
         this.canvasHeight = canvasHeight;
         this.moveSpeed = moveSpeed * timeMultiplier;
         this.side = side;
@@ -38,6 +39,12 @@ class Player {
     }
     getPos() {
         return this.PaddlePos;
+    }
+    getPaddleHeight() {
+        return this.PaddleHeight;
+    }
+    getPaddleWidth() {
+        return this.PaddleWidth;
     }
     ExportPlayerInfo() {
         return ({

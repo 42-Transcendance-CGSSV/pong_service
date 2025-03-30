@@ -1,13 +1,17 @@
+import fastifyStatic from '@fastify/static';
+import path from 'path';
+
+
 import fastify from "fastify";
 import dotenv from "dotenv";
 
 // import items from "./items";
-import controllers from "./controllers/controllerPong"; 
+import {pongController} from "./controllers/controllerPong"; 
 import swaggerUI from "@fastify/swagger-ui";
 import swagger from "@fastify/swagger";
 
 const app = fastify({ logger: true,ajv: { customOptions: { removeAdditional: "all" } } });
-app.register(controllers);
+app.register(pongController);
 
 
 app.register(swagger, {
@@ -28,6 +32,15 @@ app.register(swaggerUI, {
         deepLinking: false,
       }
 });
+
+
+app.register(fastifyStatic, {
+    root: path.join(__dirname, '../public'),
+    prefix: '/', // so it serves at http://localhost:3000/
+  });
+
+
+  
 dotenv.config();
 
 

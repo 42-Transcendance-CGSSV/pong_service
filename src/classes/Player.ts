@@ -10,6 +10,7 @@ export class Player {
     private PlayerID: number;
     private PaddlePos: number;
     private PaddleHeight: number;
+    private PaddleWidth: number;
     private canvasHeight: number;
     private moveSpeed: number;
     private side: "right" | "left";
@@ -17,10 +18,11 @@ export class Player {
     public playerColor: string = getRandomColor();
     // public AI?: AI = undefined;
     
-    constructor(playerID: number, PaddlePos: number, PaddleHeight: number, canvasHeight: number, moveSpeed: number, side: "right" | "left"){//, AI?: AI) {
+    constructor(playerID: number, PaddlePos: number, PaddleHeight: number, PaddleWidth: number, canvasHeight: number, moveSpeed: number, side: "right" | "left"){//, AI?: AI) {
       this.PlayerID = playerID;
       this.PaddlePos = PaddlePos;
       this.PaddleHeight = PaddleHeight;
+      this.PaddleWidth = PaddleWidth;
       this.canvasHeight = canvasHeight;
       this.moveSpeed = moveSpeed * timeMultiplier;
       this.side = side;
@@ -43,6 +45,12 @@ export class Player {
     }
     getPos() {
       return this.PaddlePos;
+    }
+    getPaddleHeight() {
+      return this.PaddleHeight;
+    }
+    getPaddleWidth() {
+      return this.PaddleWidth;
     }
 
     ExportPlayerInfo() {
