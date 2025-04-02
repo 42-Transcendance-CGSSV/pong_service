@@ -18,17 +18,25 @@ class pongEngine {
         this.ball = [];
         let ball = new Ball_1.Ball(0, 10, 3, 3);
         this.ball.push(ball);
-        let player = new Player_1.Player(1, constants_1.CANVAS_HEIGHT / 2, paddleHeight, paddleWidth, constants_1.CANVAS_HEIGHT, 5, "left");
-        let player2 = new Player_1.Player(2, constants_1.CANVAS_HEIGHT / 2, paddleHeight, paddleWidth, constants_1.CANVAS_HEIGHT, 5, "right");
-        this.ball[0].initNewPlayer(player);
+        let player0 = new Player_1.Player(0, "pole", paddleHeight, paddleWidth, 600, 5, "left");
+        let player1 = new Player_1.Player(1, "jean", paddleHeight, paddleWidth, 600, 5, "right");
+        let player2 = new Player_1.Player(2, "pole", paddleHeight, paddleWidth, 600, 5, "left");
+        let player3 = new Player_1.Player(3, "jean", paddleHeight, paddleWidth, 600, 5, "right");
+        let player4 = new Player_1.Player(4, "pole", paddleHeight, paddleWidth, 600, 5, "left");
+        let player5 = new Player_1.Player(5, "jean", paddleHeight, paddleWidth, 600, 5, "right");
+        this.ball[0].initNewPlayer(player0);
+        this.ball[0].initNewPlayer(player1);
         this.ball[0].initNewPlayer(player2);
+        this.ball[0].initNewPlayer(player3);
+        this.ball[0].initNewPlayer(player4);
+        this.ball[0].initNewPlayer(player5);
     }
     generateBall() {
         let ball = new Ball_1.Ball(0, 10, 3, 3);
         this.ball.push(ball);
     }
-    generatePlayer(ballID) {
-        let player = new Player_1.Player(1, 0, 0, 0, 0, 0, "left");
+    generatePlayer(ballID, args) {
+        let player = new Player_1.Player(...args);
         this.ball[ballID].initNewPlayer(player);
     }
     getBallInfo(ballID) {
@@ -46,8 +54,8 @@ class pongEngine {
                 this.ball[0].moveBall();
                 this.ball[0].checkCollision();
                 // console.log(this.ball[0].getBallX());
-                this.lowBot(this.ball[0].players[0], this.ball[0]);
-                this.lowBot(this.ball[0].players[1], this.ball[0]);
+                // this.lowBot(this.ball[0].players[0], this.ball[0]);
+                // this.lowBot(this.ball[0].players[0], this.ball[0]);
                 this.lastUpdate = currentTime;
             }
         }, constants_1.UPDATE_INTERVAL_MS);

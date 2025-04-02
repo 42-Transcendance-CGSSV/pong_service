@@ -18,3 +18,17 @@ PUT http://localhost:3000/api/startGame HTTP/1.1
 PUT http://localhost:3000/api/movePlayerUp/2 HTTP/1.1
 ###
 PUT http://localhost:3000/api/movePlayerDown/2 HTTP/1.1
+
+
+###
+PUT http://localhost:3000/api/generateNewPlayer
+Content-Type: application/json
+
+{
+  "playerID": 16,
+  "PaddleHeight": 80,
+  "PaddleWidth": 10,
+  "canvasHeight": 600,
+  "moveSpeed": 4,
+  "side": "right"
+}

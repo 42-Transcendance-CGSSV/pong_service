@@ -11,7 +11,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const controllerPong_1 = require("./controllers/controllerPong");
 const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
 const swagger_1 = __importDefault(require("@fastify/swagger"));
-const app = (0, fastify_1.default)({ logger: true, ajv: { customOptions: { removeAdditional: "all" } } });
+const app = (0, fastify_1.default)({ logger: false, ajv: { customOptions: { removeAdditional: "all" } } });
 app.register(controllerPong_1.pongController);
 app.register(swagger_1.default, {
     swagger: {

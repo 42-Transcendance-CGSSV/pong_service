@@ -1,7 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.movePlayerDown = exports.movePlayerUP = exports.startGame = exports.stopGame = exports.getPlayerInfo = exports.getAllPositions = void 0;
+exports.movePlayerDown = exports.movePlayerUP = exports.startGame = exports.stopGame = exports.getPlayerInfo = exports.getAllPositions = exports.generateNewPlayer = void 0;
+// import { request } from "http";
 const pongEngine_1 = require("../pongEngine");
+const generateNewPlayer = (request, reply) => {
+    const { playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side } = request.body;
+    const tmpARGS = [playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side];
+    pongEngine_1.Engine.generatePlayer(0, tmpARGS);
+    reply.status(200).send({ success: true });
+};
+exports.generateNewPlayer = generateNewPlayer;
 const getAllPositions = (_request, reply) => {
     // console.log(Engine.getBallInfo(0));
     reply.send(pongEngine_1.Engine.getBallInfo(0));

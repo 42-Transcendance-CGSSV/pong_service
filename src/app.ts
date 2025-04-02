@@ -10,7 +10,7 @@ import {pongController} from "./controllers/controllerPong";
 import swaggerUI from "@fastify/swagger-ui";
 import swagger from "@fastify/swagger";
 
-const app = fastify({ logger: true,ajv: { customOptions: { removeAdditional: "all" } } });
+const app = fastify({ logger: false,ajv: { customOptions: { removeAdditional: "all" } } });
 app.register(pongController);
 
 

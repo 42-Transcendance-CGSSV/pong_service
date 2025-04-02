@@ -38,10 +38,16 @@ class Ball {
             this.ballSpeedY = -this.ballSpeedY;
         }
     }
+    importAiActions(_actions) {
+        // const data = JSON.parse(JSON.stringify(actions));
+        // data.
+    }
     checkCollision() {
         if (this.ballX < 0 || this.ballX > this.canvasWidth) {
             this.ballX = this.canvasWidth / 2;
             this.ballY = this.canvasHeight / 2;
+            this.ballSpeedX = 3;
+            this.ballSpeedY = 3;
             this.ballSpeedX = -this.ballSpeedX;
             this.ballSpeedY = Math.floor(Math.random() * 10) - 5;
             return false;
@@ -80,10 +86,13 @@ class Ball {
     }
     ExportBallInfo() {
         let playersStatus = this.players.map((player) => player.ExportPlayerInfo());
+        // console.log(playersStatus[0].playerColor);
         return {
             ballID: this.ballID,
             ballX: this.ballX,
             ballY: this.ballY,
+            ballVelocityX: this.ballSpeedX,
+            ballVelocityY: this.ballSpeedY,
             playersInfo: playersStatus
         };
     }

@@ -1,9 +1,24 @@
+// import { request } from "http";
 import { Engine } from "../pongEngine";
 import {FastifyRequest, FastifyReply } from "fastify";
+import { PlayerArgs } from "../classes/Player";
 
 
+export const generateNewPlayer = (request : FastifyRequest , reply: FastifyReply) => {
+    const { playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side } = request.body as {
+        playerID: number;
+        PlayerName: string;
+        PaddleHeight: number;
+        PaddleWidth: number;
+        canvasHeight: number;
+        moveSpeed: number;
+        side: "right" | "left";
+    };
+    const tmpARGS: PlayerArgs = [playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side];
 
-
+    Engine.generatePlayer(0, tmpARGS);
+    reply.status(200).send({ success: true });
+}
 
 
 

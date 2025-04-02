@@ -6,21 +6,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const getRandomColor_1 = require("../utils/getRandomColor");
+// import { CANVAS_HEIGHT } from '../utils/constants';
 dotenv_1.default.config();
 let timeMultiplier = Number(process.env.TIME_MULTIPLIER);
 class Player {
-    // public AI?: AI = undefined;
-    constructor(playerID, PaddlePos, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side) {
+    constructor(playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side, AI) {
         this.numberOfGoals = 0;
         this.playerColor = (0, getRandomColor_1.getRandomColor)();
+        this.AI = true;
         this.PlayerID = playerID;
-        this.PaddlePos = PaddlePos;
+        this.PlayerName = PlayerName;
+        this.PaddlePos = PaddleHeight / 2;
         this.PaddleHeight = PaddleHeight;
         this.PaddleWidth = PaddleWidth;
         this.canvasHeight = canvasHeight;
         this.moveSpeed = moveSpeed * timeMultiplier;
         this.side = side;
-        //   this.AI = AI;
+        this.AI = AI !== null && AI !== void 0 ? AI : true;
     }
     getSide() {
         return this.side;
@@ -49,13 +51,15 @@ class Player {
     ExportPlayerInfo() {
         return ({
             PlayerID: this.PlayerID,
+            PlayerName: this.PlayerName,
             PaddlePos: this.PaddlePos,
             PaddleHeight: this.PaddleHeight,
             canvasHeight: this.canvasHeight,
             moveSpeed: this.moveSpeed,
             side: this.side,
             numberOfGoals: this.numberOfGoals,
-            playerColor: this.playerColor
+            playerColor: this.playerColor,
+            AI: this.AI
         });
     }
 }
