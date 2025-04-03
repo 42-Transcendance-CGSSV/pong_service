@@ -1,6 +1,8 @@
-import { getAllPositions , getPlayerInfo , startGame ,stopGame ,movePlayerUP, movePlayerDown, generateNewPlayer} from "../utils/sendItems";
-import { FastifyInstance } from "fastify";
-import rateLimit from '@fastify/rate-limit';
+import { getAllPositions, getPlayerInfo, startGame, stopGame, movePlayerUP, movePlayerDown, generateNewPlayer } from "../utils/sendItems";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import rateLimit from "@fastify/rate-limit";
+import { generatePlayerSchema } from "../schemas/put.schemas";
+import PlayerInterface from "../interfaces/player.interface";
 
 const pongPositions = {
     schema: {
@@ -20,88 +22,56 @@ const pongPositions = {
                             items: {
                                 type: "object",
                                 properties: {
-                                    PlayerID        :  { type: "number" },
-                                    PlayerName      :  { type: "string" },
-                                    PaddlePos       :  { type: "number" },
-                                    PaddleHeight    :  { type: "number" },
-                                    side            :  { type: "string" },
-                                    playerColor     :  { type: "string" },
-                                    AI              :  { type: "boolean" },
-                                    
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-        },      
+                                    PlayerID: { type: "number" },
+                                    PlayerName: { type: "string" },
+                                    PaddlePos: { type: "number" },
+                                    PaddleHeight: { type: "number" },
+                                    side: { type: "string" },
+                                    playerColor: { type: "string" },
+                                    AI: { type: "boolean" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     },
     handler: getAllPositions
 };
 
 const playerInfo = {
     schema: {
-        
         response: {
             200: {
                 type: "object",
                 properties: {
-                    PlayerID        :  { type: "number" },
-                    PlayerName      :  { type: "string" },
-                    PaddlePos       :  { type: "number" },
-                    PaddleHeight    :  { type: "number" },
-                    canvasHeight    :  { type: "number" },
-                    moveSpeed       :  { type: "number" },
-                    side            :  { type: "string" },
-                    numberOfGoals   :  { type: "number" },
-                    playerColor     :  { type: "string" },
-                    AI              :  { type: "boolean" },
-                },
+                    PlayerId: { type: "number" },
+                    PlayerName: { type: "string" },
+                    PaddlePos: { type: "number" },
+                    PaddleHeight: { type: "number" },
+                    canvasHeight: { type: "number" },
+                    moveSpeed: { type: "number" },
+                    side: { type: "string" },
+                    numberOfGoals: { type: "number" },
+                    playerColor: { type: "string" },
+                    AI: { type: "boolean" }
+                }
             }
         }
     },
     handler: getPlayerInfo
 };
 
-const genPlayer = {
-    schema: {
-        body: {
-            type: "object",
-            properties: {
-                playerID        : { type: "number" },
-                PlayerName      : { type: "string" },
-                PaddleHeight    : { type: "number" },
-                PaddleWidth     : { type: "number" },
-                canvasHeight    : { type: "number" },
-                moveSpeed       : { type: "number" },
-                side            : { type: "string" },
-                AI              : { type: "boolean" },
-            },
-            required: ["playerID", "PaddleHeight", "PaddleWidth", "canvasHeight", "moveSpeed", "side"],
-    }
-    },
-    handler: generateNewPlayer
-}
 
-
-
-
-
-
-
-
-
-
-export function pongController(fastify: FastifyInstance, _options: any, done: () => void)
-{
-
+export function pongController(fastify: FastifyInstance, _options: any, done: () => void): void {
     fastify.register(rateLimit, {
         max: 30,
-        timeWindow: '1 second'
+        timeWindow: "1 second"
     });
 
     fastify.get(process.env.BASE_ROUTE + "/positions", pongPositions);
-    
+
     fastify.get(process.env.BASE_ROUTE + "/player/:PlayerID", playerInfo);
 
     fastify.put(process.env.BASE_ROUTE + "/stopGame", stopGame);
@@ -109,7 +79,11 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
     fastify.put(process.env.BASE_ROUTE + "/movePlayerUp/:PlayerID", movePlayerUP);
     fastify.put(process.env.BASE_ROUTE + "/movePlayerDown/:PlayerID", movePlayerDown);
 
-    fastify.put(process.env.BASE_ROUTE + "/generateNewPlayer", genPlayer);
-    
+    fastify.put(process.env.BASE_ROUTE + "/generateNewPlayer", {
+        schema: { body: generatePlayerSchema },
+        handler: (request: FastifyRequest, reply: FastifyReply) => {
+            generateNewPlayer(request, reply);
+        }
+    });
     done();
 }

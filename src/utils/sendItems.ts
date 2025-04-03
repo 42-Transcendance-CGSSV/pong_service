@@ -1,70 +1,56 @@
 // import { request } from "http";
-import { Engine } from "../pongEngine";
-import {FastifyRequest, FastifyReply } from "fastify";
-import { PlayerArgs } from "../classes/Player";
+import { Engine } from "../pong.engine";
+import { FastifyReply, FastifyRequest } from "fastify";
+import { Player } from "../classes/Player";
+import { ApiError, ApiErrorCode } from "./errors.util";
 
-
-export const generateNewPlayer = (request : FastifyRequest , reply: FastifyReply) => {
-    const { playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side } = request.body as {
-        playerID: number;
-        PlayerName: string;
-        PaddleHeight: number;
-        PaddleWidth: number;
-        canvasHeight: number;
-        moveSpeed: number;
-        side: "right" | "left";
-    };
-    const tmpARGS: PlayerArgs = [playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side];
-
-    Engine.generatePlayer(0, tmpARGS);
+export function generateNewPlayer(request: FastifyRequest, reply: FastifyReply): void {
+    const playerInRequest = request.body as Player;
+    Engine.generatePlayer(playerInRequest);
     reply.status(200).send({ success: true });
 }
 
-
-
-
-
-
-export const getAllPositions = (_request: FastifyRequest, reply: FastifyReply) => {
+export function getAllPositions(_request: FastifyRequest, reply: FastifyReply): void {
     // console.log(Engine.getBallInfo(0));
+    //TODO: CHANGE THIS
     reply.send(Engine.getBallInfo(0));
 }
 
-export const getPlayerInfo = (request : FastifyRequest , reply: FastifyReply) => {
+export function getPlayerInfo(request: FastifyRequest, reply: FastifyReply): void {
     const { PlayerID } = request.params as { PlayerID: string };
-    const player = Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
+    const player = Engine.ball[0].players.find((player) => player.PlayerID === Number(PlayerID));
 
     if (player) {
         reply.send(player);
     } else {
-        reply.status(404).send({ message: request.params??0 + " " + PlayerID + " player not found" });
+        reply.status(404).send({ message: request.params ?? 0 + " " + PlayerID + " player not found" });
     }
 }
 
-export const stopGame = (_request : FastifyRequest , _reply: FastifyReply) => {
+export function stopGame(_request: FastifyRequest, _reply: FastifyReply): void {
     Engine.stopGameLoop();
 }
 
-export const startGame = (_request : FastifyRequest , _reply: FastifyReply) => {
+export function startGame(_request: FastifyRequest, _reply: FastifyReply): void {
     Engine.startGameLoop();
 }
 
-export const movePlayerUP = (request : FastifyRequest , reply: FastifyReply) => {
+export function movePlayerUP(request: FastifyRequest, reply: FastifyReply): void {
     const { PlayerID } = request.params as { PlayerID: string };
-    const player = Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
-    
+    const player = Engine.ball[0].players.find((player) => player.PlayerID === Number(PlayerID));
+
     if (player) {
         player.moveUp();
         reply.send({ success: true });
-    } else {
-        reply.status(404).send({ success: false, message: "Player not found" });
+        return;
     }
+    throw new ApiError(ApiErrorCode.USER_NOT_FOUND, "Player not found !");
 }
 
-export const movePlayerDown = (request : FastifyRequest , reply: FastifyReply) => {
+export function movePlayerDown(request: FastifyRequest, reply: FastifyReply): void {
     const { PlayerID } = request.params as { PlayerID: string };
-    const player = Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
-    
+    const player = Engine.ball[0].players.find((player) => player.PlayerID === Number(PlayerID));
+
     if (player) {
         player.moveDown();
         reply.send({ success: true });
