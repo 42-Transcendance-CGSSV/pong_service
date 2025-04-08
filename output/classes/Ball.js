@@ -1,100 +1,79 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Ball = void 0;
-const constants_1 = require("../utils/constants");
+const pongEngine_1 = require("../pongEngine");
+const environment_1 = require("../utils/environment");
 class Ball {
-    // private lastToHit       ?:  Player;
     // private maxScore        :   number = 5;
-    constructor(ballID, ballRadius, ballSpeedX, ballSpeedY) {
-        this.players = [];
-        this.canvasWidth = constants_1.CANVAS_WIDTH;
-        this.canvasHeight = constants_1.CANVAS_HEIGHT;
-        this.ballX = constants_1.CANVAS_WIDTH / 2;
-        this.ballY = constants_1.CANVAS_HEIGHT / 2;
+    constructor(ballRadius, ballVelocityX, ballVelocityY) {
+        this.ballX = environment_1.env.CANVAS_WIDTH / 2;
+        this.ballY = environment_1.env.CANVAS_HEIGHT / 2;
         this.ballRadius = ballRadius;
-        this.ballSpeedX = ballSpeedX * constants_1.TIME_MULTIPLIER;
-        this.ballSpeedY = ballSpeedY * constants_1.TIME_MULTIPLIER;
-        this.ballID = ballID;
-    }
-    getBallX() {
-        return this.ballX;
-    }
-    getBallY() {
-        return this.ballY;
-    }
-    getBallSpeedX() {
-        return this.ballSpeedX;
-    }
-    getBallSpeedY() {
-        return this.ballSpeedY;
-    }
-    initNewPlayer(player) {
-        this.players.push(player);
+        this.ballVelocityX = ballVelocityX * environment_1.env.TIME_MULTIPLIER;
+        this.ballVelocityY = ballVelocityY * environment_1.env.TIME_MULTIPLIER;
     }
     moveBall() {
-        this.ballX += this.ballSpeedX;
-        this.ballY += this.ballSpeedY;
-        if (this.ballY - this.ballRadius < 0 || this.ballY + this.ballRadius > this.canvasHeight) {
-            this.ballSpeedY = -this.ballSpeedY;
+        // console.log("Ball position: ", this.ballX, this.ballY);
+        this.ballX += this.ballVelocityX;
+        this.ballY += this.ballVelocityY;
+        if (this.ballY - this.ballRadius < 0 || this.ballY + this.ballRadius > environment_1.env.CANVAS_HEIGHT) {
+            this.ballVelocityY = -this.ballVelocityY;
         }
     }
-    importAiActions(_actions) {
-        // const data = JSON.parse(JSON.stringify(actions));
-        // data.
-    }
+    // importAiActions(_actions: JSON)
+    // {
+    //   // const data = JSON.parse(JSON.stringify(actions));
+    //   // data.
+    // }
     checkCollision() {
-        if (this.ballX < 0 || this.ballX > this.canvasWidth) {
-            this.ballX = this.canvasWidth / 2;
-            this.ballY = this.canvasHeight / 2;
-            this.ballSpeedX = 3;
-            this.ballSpeedY = 3;
-            this.ballSpeedX = -this.ballSpeedX;
-            this.ballSpeedY = Math.floor(Math.random() * 10) - 5;
-            return false;
+        if (this.ballX < 0 || this.ballX > environment_1.env.CANVAS_WIDTH) {
+            this.ballX = environment_1.env.CANVAS_WIDTH / 2;
+            this.ballY = environment_1.env.CANVAS_HEIGHT / 2;
+            this.ballVelocityX = 3;
+            this.ballVelocityY = 3;
+            this.ballVelocityX = -this.ballVelocityX;
+            this.ballVelocityY = Math.floor(Math.random() * 10) - 5;
+            if (this.lastToHit) {
+                this.lastToHit.numberOfGoals++;
+                console.log(`player ${this.lastToHit.PlayerName} scored :${this.lastToHit.numberOfGoals}`);
+            }
         }
-        for (let i = 0; i < this.players.length; i++) {
-            const player = this.players[i];
-            // console.log(this.paddleHeight);
-            if (player &&
-                player.getSide() === "left" &&
+        const playersInGame = pongEngine_1.Engine.getPlayersByBall(this);
+        if (!playersInGame) {
+            return;
+        }
+        // console.log("Ball position: ", this.ballX, this.ballY);
+        for (const player of playersInGame) {
+            if (!player) {
+                continue;
+            }
+            if (player.getSide() === "left" &&
                 this.ballX - this.ballRadius < player.getPaddleWidth() &&
                 this.ballY > player.getPos() &&
                 this.ballY < player.getPos() + player.getPaddleHeight()) {
-                // console.log(this.ballRadius);
-                this.ballSpeedX = -this.ballSpeedX;
-                this.ballSpeedX += 1;
-                this.ballSpeedY += Math.floor(Math.random() * 10) - 5;
-                // this.lastToHit = player;
+                this.ballVelocityX = -this.ballVelocityX;
+                this.ballVelocityX += 1;
+                this.ballVelocityY += Math.floor(Math.random() * 10) - 5;
+                this.lastToHit = player;
                 break;
             }
-            if (player &&
-                player.getSide() === "right" &&
-                this.ballX + this.ballRadius > this.canvasWidth - player.getPaddleWidth() &&
+            if (player.getSide() === "right" &&
+                this.ballX + this.ballRadius > environment_1.env.CANVAS_WIDTH - player.getPaddleWidth() &&
                 this.ballY > player.getPos() &&
                 this.ballY < player.getPos() + player.getPaddleHeight()) {
                 // console.log(this.ballRadius);
-                this.ballSpeedX = -this.ballSpeedX;
-                this.ballSpeedX += 1;
-                this.ballSpeedY += Math.floor(Math.random() * 10) - 5;
-                // console.log(this.ballSpeedX , this.ballSpeedY);
-                // this.lastToHit = player;
+                // console.log("hereeee");
+                this.ballVelocityX = -this.ballVelocityX;
+                this.ballVelocityX += 1;
+                this.ballVelocityY += Math.floor(Math.random() * 10) - 5;
+                // console.log(this.ballVelocityX , this.ballVelocityY);
+                this.lastToHit = player;
                 break;
             }
         }
         ;
-        return false;
     }
     ExportBallInfo() {
-        let playersStatus = this.players.map((player) => player.ExportPlayerInfo());
-        // console.log(playersStatus[0].playerColor);
-        return {
-            ballID: this.ballID,
-            ballX: this.ballX,
-            ballY: this.ballY,
-            ballVelocityX: this.ballSpeedX,
-            ballVelocityY: this.ballSpeedY,
-            playersInfo: playersStatus
-        };
+        return this;
     }
 }
-exports.Ball = Ball;
+exports.default = Ball;

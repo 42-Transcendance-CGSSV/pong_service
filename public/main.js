@@ -6,6 +6,7 @@ const BASEAI = 'http://localhost:3001/api';
 const canvas = document.getElementById("pong");
 const ctx = canvas.getContext("2d");
 
+const gameid = prompt("game id :")
 
 // PUT http://localhost:3000/api/movePlayerUp/2 HTTP/1.1
 // ###
@@ -19,7 +20,7 @@ function moveUp(playerID) {
   }
 
 function startGame() {
-    fetch(`${BASE}/startGame`, { method: 'PUT' })
+    fetch(`${BASE}/startGame/${gameid}`, { method: 'PUT' })
 }
 
 function stopGame() {
@@ -32,18 +33,17 @@ function getPositions() {
   if (polling) 
     return;
   polling = true;
-
-
+  
   function loop() {
-    fetch(`${BASE}/positions`)
-      .then(res => res.json())
-      .then(data => {
-        drawGame(data);
-        MoveAIs(data);
-        setTimeout(loop, 17); 
-      })
+    fetch(`${BASE}/match/${gameid}`)
+    .then(res => res.json())
+    .then(data => {
+      drawGame(data);
+      // MoveAIs(data);
+      setTimeout(loop, 17); 
+    })
   }
-
+  
   loop(); 
 }
 
@@ -80,27 +80,27 @@ async function MoveAIs(data) {
 }
 
 function drawGame(data) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    if (!Array.isArray(data)) return;
-    
-    data.forEach(ball => {
-        // Draw ball
-        ctx.beginPath();
-        ctx.arc(ball.ballX, ball.ballY, 10, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
-        ctx.fill();
-        
-        // Draw paddles
-        ball.playersInfo.forEach(player => {
-            ctx.fillStyle = player.playerColor;
-            // console.log(player.playerColor ); 
-            const paddleWidth = 10;
-            const paddleHeight = 80;
-            const x = player.side === "left" ? 0 : canvas.width - paddleWidth;
-            ctx.fillRect(x, player.PaddlePos, paddleWidth, paddleHeight);
-        });
-    });
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  
+  // Draw ball
+  // console.log(data.ball);
+  ctx.beginPath();
+  ctx.arc(data.ball.ballX, data.ball.ballY, data.ball.ballRadius, 0, Math.PI * 2);
+  // console.log(data.ball.ballX, data.ball.ballY, data.ballRadius);
+  ctx.fillStyle = "white";
+  ctx.fill();
+  console.log(data);
+      
+      // // Draw paddles
+      data.players.forEach(player => {
+          ctx.fillStyle = player.playerColor;
+          // console.log(player.playerColor ); 
+          const paddleWidth = 10;
+          const paddleHeight = 80;
+          const x = player.side === "left" ? 0 : canvas.width - paddleWidth;
+          ctx.fillRect(x, player.PaddlePos, paddleWidth, paddleHeight);
+      });
 }
 
 document.addEventListener('keydown', (event) => {

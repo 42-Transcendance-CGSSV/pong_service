@@ -1,61 +1,86 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.movePlayerDown = exports.movePlayerUP = exports.startGame = exports.stopGame = exports.getPlayerInfo = exports.getAllPositions = exports.generateNewPlayer = void 0;
-// import { request } from "http";
+exports.movePlayerDown = exports.movePlayerUP = exports.startGame = exports.stopGame = exports.getPlayerInfo = exports.getMatchInfo = exports.generateNewPlayer = void 0;
 const pongEngine_1 = require("../pongEngine");
 const generateNewPlayer = (request, reply) => {
-    const { playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side } = request.body;
-    const tmpARGS = [playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side];
-    pongEngine_1.Engine.generatePlayer(0, tmpARGS);
+    const { PlayerName, currentBelong, side, AI } = request.body;
+    if (currentBelong >= pongEngine_1.Engine.matches.length) {
+        reply.status(400).send({ success: false, message: "Invalid match index" });
+        return;
+    }
+    if (pongEngine_1.Engine.matches[currentBelong].isExpired()) {
+        reply.status(400).send({ success: false, message: "Match expired" });
+        return;
+    }
+    pongEngine_1.Engine.generatePlayer(PlayerName, currentBelong, side, AI);
     reply.status(200).send({ success: true });
 };
 exports.generateNewPlayer = generateNewPlayer;
-const getAllPositions = (_request, reply) => {
-    // console.log(Engine.getBallInfo(0));
-    reply.send(pongEngine_1.Engine.getBallInfo(0));
+const getMatchInfo = (request, reply) => {
+    const { MatchID } = request.params;
+    const match = pongEngine_1.Engine.matches.find((match) => match.MatchIndex === Number(MatchID));
+    if (!match) {
+        const NewMatch = pongEngine_1.Engine.generateMatch(Number(MatchID));
+        if (!NewMatch) {
+            reply.status(500).send({ message: " mach now faund and failed to create new match" });
+            return;
+        }
+        reply.status(200).send(NewMatch.exportMatchInfo());
+        return;
+    }
+    reply.send(match.exportMatchInfo());
 };
-exports.getAllPositions = getAllPositions;
+exports.getMatchInfo = getMatchInfo;
 const getPlayerInfo = (request, reply) => {
-    var _a;
     const { PlayerID } = request.params;
-    const player = pongEngine_1.Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
-    if (player) {
-        reply.send(player);
+    for (const match of pongEngine_1.Engine.matches) {
+        const player = match.players.find((player) => player.PlayerID === PlayerID);
+        if (player) {
+            reply.send(player.ExportPlayerInfo());
+            return;
+        }
     }
-    else {
-        reply.status(404).send({ message: (_a = request.params) !== null && _a !== void 0 ? _a : 0 + " " + PlayerID + " player not found" });
-    }
+    reply.status(404).send({ message: "Player not found" });
 };
 exports.getPlayerInfo = getPlayerInfo;
-const stopGame = (_request, _reply) => {
+const stopGame = (_request, reply) => {
     pongEngine_1.Engine.stopGameLoop();
+    reply.send({ success: true });
 };
 exports.stopGame = stopGame;
-const startGame = (_request, _reply) => {
-    pongEngine_1.Engine.startGameLoop();
+const startGame = (_request, reply) => {
+    const { MatchIndex } = _request.params;
+    const match = pongEngine_1.Engine.matches.find((match) => match.MatchIndex === Number(MatchIndex));
+    if (!match) {
+        reply.status(400).send({ success: false, message: `Match not found ${MatchIndex}` });
+        return;
+    }
+    match.startedAt = Date.now();
+    console.log("Game started");
+    reply.send({ success: true });
 };
 exports.startGame = startGame;
 const movePlayerUP = (request, reply) => {
     const { PlayerID } = request.params;
-    const player = pongEngine_1.Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
-    if (player) {
-        player.moveUp();
-        reply.send({ success: true });
+    for (const match of pongEngine_1.Engine.matches) {
+        const player = match.players.find((player) => player.PlayerID === PlayerID);
+        if (player) {
+            reply.send(player.moveUp());
+            return;
+        }
     }
-    else {
-        reply.status(404).send({ success: false, message: "Player not found" });
-    }
+    reply.status(404).send({ message: "Player not found" });
 };
 exports.movePlayerUP = movePlayerUP;
 const movePlayerDown = (request, reply) => {
     const { PlayerID } = request.params;
-    const player = pongEngine_1.Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
-    if (player) {
-        player.moveDown();
-        reply.send({ success: true });
+    for (const match of pongEngine_1.Engine.matches) {
+        const player = match.players.find((player) => player.PlayerID === PlayerID);
+        if (player) {
+            reply.send(player.moveDown());
+            return;
+        }
     }
-    else {
-        reply.status(404).send({ success: false, message: "Player not found" });
-    }
+    reply.status(404).send({ message: "Player not found" });
 };
 exports.movePlayerDown = movePlayerDown;

@@ -38,6 +38,7 @@ dotenv_1.default.config();
 async function start() {
     try {
         await app.listen({ port: Number(process.env.PORT) });
+        // await app.listen();
     }
     catch (error) {
         app.log.error(error);

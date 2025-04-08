@@ -63,7 +63,8 @@ dotenv.config();
 //TODO: FIXING ENV UNDEFINED
 async function start(): Promise<void> {
     try {
-        await app.listen({ port: Number(process.env.PORT ) });
+        await app.listen({ port: Number(process.env.PORT )  });
+        // await app.listen();
     } catch (error) {
         app.log.error(error);
         process.exit(1);

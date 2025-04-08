@@ -1,22 +1,24 @@
-// import { request } from "http";
 import { Engine } from "../pongEngine";
 import {FastifyRequest, FastifyReply } from "fastify";
-import { PlayerArgs } from "../classes/Player";
+
 
 
 export const generateNewPlayer = (request : FastifyRequest , reply: FastifyReply) => {
-    const { playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side } = request.body as {
-        playerID: number;
+    const { PlayerName, currentBelong , side, AI} = request.body as {
         PlayerName: string;
-        PaddleHeight: number;
-        PaddleWidth: number;
-        canvasHeight: number;
-        moveSpeed: number;
+        currentBelong: number;
         side: "right" | "left";
+        AI?: boolean;
     };
-    const tmpARGS: PlayerArgs = [playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side];
-
-    Engine.generatePlayer(0, tmpARGS);
+    if (currentBelong >= Engine.matches.length) {
+        reply.status(400).send({ success: false, message: "Invalid match index" });
+        return;
+    }
+    if (Engine.matches[currentBelong].isExpired()) {
+        reply.status(400).send({ success: false, message: "Match expired" });
+        return;
+    }
+    Engine.generatePlayer(PlayerName, currentBelong, side, AI);
     reply.status(200).send({ success: true });
 }
 
@@ -25,50 +27,99 @@ export const generateNewPlayer = (request : FastifyRequest , reply: FastifyReply
 
 
 
-export const getAllPositions = (_request: FastifyRequest, reply: FastifyReply) => {
-    // console.log(Engine.getBallInfo(0));
-    reply.send(Engine.getBallInfo(0));
+
+
+export const getMatchInfo = (request: FastifyRequest, reply: FastifyReply) => {
+    const { MatchID } = request.params as { MatchID: string };
+    const match = Engine.matches.find((match) => match.MatchIndex === Number(MatchID));
+    if (!match) {
+        const NewMatch = Engine.generateMatch(Number(MatchID));
+        if (!NewMatch) {
+            reply.status(500).send({ message: " mach now faund and failed to create new match" });
+            return;
+        }
+        reply.status(200).send(NewMatch.exportMatchInfo());
+        return;
+    }
+    reply.send(match.exportMatchInfo());
 }
+
+
+
+
+
+
+
+
+
+
+
 
 export const getPlayerInfo = (request : FastifyRequest , reply: FastifyReply) => {
     const { PlayerID } = request.params as { PlayerID: string };
-    const player = Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
-
-    if (player) {
-        reply.send(player);
-    } else {
-        reply.status(404).send({ message: request.params??0 + " " + PlayerID + " player not found" });
+    
+    for (const match of Engine.matches) {
+        const player = match.players.find((player) => player.PlayerID === PlayerID);
+        if (player) {
+            reply.send(player.ExportPlayerInfo());
+            return;
+        }
     }
+    reply.status(404).send({ message: "Player not found" });
 }
 
-export const stopGame = (_request : FastifyRequest , _reply: FastifyReply) => {
+
+
+
+
+
+
+export const stopGame = (_request : FastifyRequest , reply: FastifyReply) => {
     Engine.stopGameLoop();
+    reply.send({ success: true });
 }
 
-export const startGame = (_request : FastifyRequest , _reply: FastifyReply) => {
-    Engine.startGameLoop();
+export const startGame = (_request : FastifyRequest , reply: FastifyReply) => {
+    const { MatchIndex } = _request.params as { MatchIndex: string };
+    const match = Engine.matches.find((match) => match.MatchIndex === Number(MatchIndex));
+    if (!match) {
+        reply.status(400).send({ success: false, message: `Match not found ${MatchIndex}` });
+        return;
+    }
+    match.startedAt = Date.now();
+    console.log("Game started");
+    reply.send({ success: true})
 }
+
+
+
+
+
+
+
 
 export const movePlayerUP = (request : FastifyRequest , reply: FastifyReply) => {
     const { PlayerID } = request.params as { PlayerID: string };
-    const player = Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
     
-    if (player) {
-        player.moveUp();
-        reply.send({ success: true });
-    } else {
-        reply.status(404).send({ success: false, message: "Player not found" });
+    for (const match of Engine.matches) {
+        const player = match.players.find((player) => player.PlayerID === PlayerID);
+        if (player) {
+            reply.send(player.moveUp());
+            return;
+        }
     }
+    reply.status(404).send({ message: "Player not found" });
 }
 
 export const movePlayerDown = (request : FastifyRequest , reply: FastifyReply) => {
     const { PlayerID } = request.params as { PlayerID: string };
-    const player = Engine.ball[0].players.find((player) => player.getID() === Number(PlayerID));
     
-    if (player) {
-        player.moveDown();
-        reply.send({ success: true });
-    } else {
-        reply.status(404).send({ success: false, message: "Player not found" });
+    for (const match of Engine.matches) {
+        const player = match.players.find((player) => player.PlayerID === PlayerID);
+        if (player) {
+            reply.send(player.moveDown());
+            return;
+        }
     }
+    reply.status(404).send({ message: "Player not found" });
 }

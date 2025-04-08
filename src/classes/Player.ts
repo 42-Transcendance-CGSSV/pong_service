@@ -1,43 +1,30 @@
-import dotenv from 'dotenv'
 import { getRandomColor } from '../utils/getRandomColor';
-// import { CANVAS_HEIGHT } from '../utils/constants';
+import { env } from '../utils/environment';
+import PlayerInterface from '../interfaces/player.interface';
+import { randomUUID } from 'crypto';
 
 
-dotenv.config();
-let timeMultiplier = Number(process.env.TIME_MULTIPLIER);
-
-export type PlayerArgs = [
-    playerID      : number,
-    PlayerName    : string,
-    PaddleHeight  : number,
-    PaddleWidth   : number,
-    canvasHeight  : number,
-    moveSpeed     : number,
-    side          : "right" | "left",
-    // AI            : boolean
-]
-
-export class Player {
-    private PlayerID: number;
-    public  PlayerName: string;
-    private PaddlePos: number;
-    private PaddleHeight: number;
-    private PaddleWidth: number;
-    private canvasHeight: number;
-    private moveSpeed: number;
-    private side: "right" | "left";
-    public numberOfGoals: number = 0;
-    public playerColor: string = getRandomColor();
-    public AI: boolean = true;
+class Player implements PlayerInterface {
+    public readonly PlayerID       : string;
+    public          currentBellong : number;
+    public readonly PlayerName     : string;
+    public          PaddlePos      : number;
+    public readonly PaddleHeight   : number;
+    public readonly PaddleWidth    : number;
+    public          moveSpeed      : number;
+    public readonly side           : "right" | "left";
+    public          numberOfGoals  : number = 0;
+    public readonly playerColor    : string = getRandomColor();
+    public AI             : boolean = true;
     
-    constructor(playerID: number, PlayerName: string, PaddleHeight: number, PaddleWidth: number, canvasHeight: number, moveSpeed: number, side: "right" | "left", AI?: boolean) {
-      this.PlayerID = playerID;
+    constructor(PlayerName: string, currentBellong:number, side: "right" | "left", AI?: boolean) {
+      this.currentBellong = currentBellong;
+      this.PlayerID = randomUUID();
       this.PlayerName = PlayerName;
-      this.PaddlePos = PaddleHeight / 2;
-      this.PaddleHeight = PaddleHeight;
-      this.PaddleWidth = PaddleWidth;
-      this.canvasHeight = canvasHeight;
-      this.moveSpeed = moveSpeed * timeMultiplier;
+      this.PaddlePos = env.CANVAS_HEIGHT / 2 - env.PLAYER_PADDLE_HEIGHT / 2;
+      this.PaddleHeight = env.PLAYER_PADDLE_HEIGHT;
+      this.PaddleWidth = env.PADDLE_WIDTH;
+      this.moveSpeed = env.PLAYER_MOVE_SPEED * env.TIME_MULTIPLIER;
       this.side = side;
       this.AI = AI ?? true;
     }
@@ -50,7 +37,7 @@ export class Player {
         this.PaddlePos -= this.moveSpeed;
     };
     moveDown() {
-      if (this.PaddlePos < this.canvasHeight - this.PaddleHeight) 
+      if (this.PaddlePos < env.CANVAS_HEIGHT - this.PaddleHeight) 
         this.PaddlePos += this.moveSpeed;
     }
     getID() {
@@ -68,17 +55,8 @@ export class Player {
 
     ExportPlayerInfo() {
       
-        return ({
-            PlayerID        : this.PlayerID       ,
-            PlayerName      : this.PlayerName     ,
-            PaddlePos       : this.PaddlePos      ,
-            PaddleHeight    : this.PaddleHeight   ,
-            canvasHeight    : this.canvasHeight   ,
-            moveSpeed       : this.moveSpeed      ,
-            side            : this.side           ,
-            numberOfGoals   : this.numberOfGoals  ,
-            playerColor     : this.playerColor    ,
-            AI              : this.AI
-    });
+        return this;
     }
 }
+
+export default Player;

@@ -1,85 +1,126 @@
-import { Player , PlayerArgs} from "./classes/Player";
-import { Ball } from "./classes/Ball";
-import {UPDATE_INTERVAL_MS} from "./utils/constants";
+import { env } from "./utils/environment";
 
-let paddleHeight = 80;
-let paddleWidth = 10;
+import Player from "./classes/Player";
+import Ball   from "./classes/Ball";
+import Match from "./classes/Match";
+import matchInterface from "./interfaces/match.interface";
+
 
 class pongEngine
 {
-  public ball: Ball[];
-  private gameStatus?: NodeJS.Timeout;
-  private lastUpdate: number = 0;
+  public  matches     : Match[];
+  private gameStatus? : NodeJS.Timeout;
+  private lastUpdate  : number = 0;
 
   constructor()
   {
-    this.ball = [];
+    this.matches = [];
 
-    let ball = new Ball(0,10,3,3);
-    this.ball.push(ball);
-    let player0 = new Player(0,"pole", paddleHeight, paddleWidth, 600 ,5, "left");
-    let player1 = new Player(1,"jean", paddleHeight, paddleWidth, 600, 5, "right");
-    let player2 = new Player(2,"pole", paddleHeight, paddleWidth, 600 ,5, "left");
-    let player3 = new Player(3,"jean", paddleHeight, paddleWidth, 600, 5, "right");
-    let player4 = new Player(4,"pole", paddleHeight, paddleWidth, 600 ,5, "left");
-    let player5 = new Player(5,"jean", paddleHeight, paddleWidth, 600, 5, "right");
+    const player1 = new Player("marc", 0, "left");
+    const player2 = new Player("philip", 0, "right");
+    let initialMatch = new Match(0, 3);
+    initialMatch.initNewPlayer(player1);
+    initialMatch.initNewPlayer(player2);
 
-    this.ball[0].initNewPlayer(player0);
-    this.ball[0].initNewPlayer(player1);
-    this.ball[0].initNewPlayer(player2);
-    this.ball[0].initNewPlayer(player3);
-    this.ball[0].initNewPlayer(player4);
-    this.ball[0].initNewPlayer(player5);
+    this.matches.push(initialMatch);
   }
 
-  generateBall()
+  public getMatchByBall(ball: Ball): Match | null
   {
-    let ball = new Ball(0,10,3,3);
-    this.ball.push(ball);
+    for (const match of this.matches)
+    {
+      // if (!match || match.isExpired())
+      if (!match)
+        continue;
+      if (match.isSameBall(ball))
+        return match;
+    }
+    return null;
   }
 
-  generatePlayer(ballID: number, args: PlayerArgs)
+  public getPlayersByBall(ball: Ball) : Player[] | null
   {
-    let player = new Player(...args);
-    this.ball[ballID].initNewPlayer(player);
+    let match = this.getMatchByBall(ball);
+    // console.log("Players in match: ");
+    if (!match)
+      return null;
+    if (!match.players)
+      return null;
+    return match.players;
   }
 
-  getBallInfo(ballID: number)
+  public generateMatch(matchIndex: number) : Match
   {
-    return [this.ball[ballID].ExportBallInfo()];
+    let match = new Match(matchIndex, 3);
+    const player1 = new Player("jean marc", matchIndex, "left");
+    const player2 = new Player("alex", matchIndex, "right");
+    match.initNewPlayer(player1);
+    match.initNewPlayer(player2); // TODO: should be done by the client
+    this.matches.push(match);
+    return match;
   }
 
-  lowBot = (player: Player, ball: Ball) => {
-    if (player.getPos() + paddleHeight / 2 < ball.getBallY()) 
+  public generatePlayer(PlayerName: string, matchIndex: number,  side: "right" | "left", AI?: boolean) : void
+  {
+    if (matchIndex >= this.matches.length)
+      return;
+    if (this.matches[matchIndex].isExpired())
+      return;
+    let player = new Player(PlayerName, matchIndex, side, AI);
+    this.matches[matchIndex].initNewPlayer(player);
+  }
+
+  public getmatchInfo(matchID: number) : matchInterface | null
+  {
+    if (matchID >= this.matches.length)
+      return null;
+    if (this.matches[matchID].isExpired())
+      return null;
+    return this.matches[matchID].exportMatchInfo();
+  }
+
+  public lowBot = (player: Player) => {
+    const match = this.matches.find((match) => match.MatchIndex === player.currentBellong);
+    if (!match) {
+      console.error("Match not found");
+      return;
+    }
+    if (player.getPos() + player.getPaddleHeight() / 2 < match.ball.ballY)
       player.moveDown();
     else 
     player.moveUp();
   }
 
-  startGameLoop()
+  public startGameLoop() : void
   {
     if (this.gameStatus)
       return;
-    // console.log(UPDATE_INTERVAL_MS);
-      
+    console.log("Starting game loop");
     this.lastUpdate = Date.now();
     this.gameStatus = setInterval(() => 
     {
       const currentTime = Date.now();
       const deltaTime = currentTime - this.lastUpdate;
-      
-      if (deltaTime >= UPDATE_INTERVAL_MS) {
-        this.ball[0].moveBall();
-        this.ball[0].checkCollision();
-        // console.log(this.ball[0].getBallX());
-        // this.lowBot(this.ball[0].players[0], this.ball[0]);
-        // this.lowBot(this.ball[0].players[0], this.ball[0]);
+      if (deltaTime >= env.UPDATE_INTERVAL_MS) {
+        for(const match of this.matches)
+          {
+            if (match.startedAt === -1)
+              continue;
+            // console.log(`Delta time: ${deltaTime} update rate ${env.UPDATE_INTERVAL_MS}`);
+          match.ball.moveBall();
+          match.ball.checkCollision();
+          for (const player of match.getPlayersInMatch()) {
+            if (player.AI) {
+              this.lowBot(player);
+            }
+          }
+        }
         this.lastUpdate = currentTime;
       }
-    }, UPDATE_INTERVAL_MS);
+    }, env.UPDATE_INTERVAL_MS);
   }
 
-  stopGameLoop()
+  public stopGameLoop() : void
   {
     if (this.gameStatus){
       clearInterval(this.gameStatus as NodeJS.Timeout);
@@ -87,5 +128,5 @@ class pongEngine
     }
   }
 }
-
 export let Engine = new pongEngine();
+Engine.startGameLoop();

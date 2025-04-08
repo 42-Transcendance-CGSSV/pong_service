@@ -1,64 +1,101 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Engine = void 0;
-const Player_1 = require("./classes/Player");
-const Ball_1 = require("./classes/Ball");
-const constants_1 = require("./utils/constants");
-let paddleHeight = 80;
-let paddleWidth = 10;
+const environment_1 = require("./utils/environment");
+const Player_1 = __importDefault(require("./classes/Player"));
+const Match_1 = __importDefault(require("./classes/Match"));
 class pongEngine {
     constructor() {
         this.lastUpdate = 0;
-        this.lowBot = (player, ball) => {
-            if (player.getPos() + paddleHeight / 2 < ball.getBallY())
+        this.lowBot = (player) => {
+            const match = this.matches.find((match) => match.MatchIndex === player.currentBellong);
+            if (!match) {
+                console.error("Match not found");
+                return;
+            }
+            if (player.getPos() + player.getPaddleHeight() / 2 < match.ball.ballY)
                 player.moveDown();
             else
                 player.moveUp();
         };
-        this.ball = [];
-        let ball = new Ball_1.Ball(0, 10, 3, 3);
-        this.ball.push(ball);
-        let player0 = new Player_1.Player(0, "pole", paddleHeight, paddleWidth, 600, 5, "left");
-        let player1 = new Player_1.Player(1, "jean", paddleHeight, paddleWidth, 600, 5, "right");
-        let player2 = new Player_1.Player(2, "pole", paddleHeight, paddleWidth, 600, 5, "left");
-        let player3 = new Player_1.Player(3, "jean", paddleHeight, paddleWidth, 600, 5, "right");
-        let player4 = new Player_1.Player(4, "pole", paddleHeight, paddleWidth, 600, 5, "left");
-        let player5 = new Player_1.Player(5, "jean", paddleHeight, paddleWidth, 600, 5, "right");
-        this.ball[0].initNewPlayer(player0);
-        this.ball[0].initNewPlayer(player1);
-        this.ball[0].initNewPlayer(player2);
-        this.ball[0].initNewPlayer(player3);
-        this.ball[0].initNewPlayer(player4);
-        this.ball[0].initNewPlayer(player5);
+        this.matches = [];
+        const player1 = new Player_1.default("marc", 0, "left");
+        const player2 = new Player_1.default("philip", 0, "right");
+        let initialMatch = new Match_1.default(0, 3);
+        initialMatch.initNewPlayer(player1);
+        initialMatch.initNewPlayer(player2);
+        this.matches.push(initialMatch);
     }
-    generateBall() {
-        let ball = new Ball_1.Ball(0, 10, 3, 3);
-        this.ball.push(ball);
+    getMatchByBall(ball) {
+        for (const match of this.matches) {
+            // if (!match || match.isExpired())
+            if (!match)
+                continue;
+            if (match.isSameBall(ball))
+                return match;
+        }
+        return null;
     }
-    generatePlayer(ballID, args) {
-        let player = new Player_1.Player(...args);
-        this.ball[ballID].initNewPlayer(player);
+    getPlayersByBall(ball) {
+        let match = this.getMatchByBall(ball);
+        // console.log("Players in match: ");
+        if (!match)
+            return null;
+        if (!match.players)
+            return null;
+        return match.players;
     }
-    getBallInfo(ballID) {
-        return [this.ball[ballID].ExportBallInfo()];
+    generateMatch(matchIndex) {
+        let match = new Match_1.default(matchIndex, 3);
+        const player1 = new Player_1.default("jean marc", matchIndex, "left");
+        const player2 = new Player_1.default("alex", matchIndex, "right");
+        match.initNewPlayer(player1);
+        match.initNewPlayer(player2); // TODO: should be done by the client
+        this.matches.push(match);
+        return match;
+    }
+    generatePlayer(PlayerName, matchIndex, side, AI) {
+        if (matchIndex >= this.matches.length)
+            return;
+        if (this.matches[matchIndex].isExpired())
+            return;
+        let player = new Player_1.default(PlayerName, matchIndex, side, AI);
+        this.matches[matchIndex].initNewPlayer(player);
+    }
+    getmatchInfo(matchID) {
+        if (matchID >= this.matches.length)
+            return null;
+        if (this.matches[matchID].isExpired())
+            return null;
+        return this.matches[matchID].exportMatchInfo();
     }
     startGameLoop() {
         if (this.gameStatus)
             return;
-        // console.log(UPDATE_INTERVAL_MS);
+        console.log("Starting game loop");
         this.lastUpdate = Date.now();
         this.gameStatus = setInterval(() => {
             const currentTime = Date.now();
             const deltaTime = currentTime - this.lastUpdate;
-            if (deltaTime >= constants_1.UPDATE_INTERVAL_MS) {
-                this.ball[0].moveBall();
-                this.ball[0].checkCollision();
-                // console.log(this.ball[0].getBallX());
-                // this.lowBot(this.ball[0].players[0], this.ball[0]);
-                // this.lowBot(this.ball[0].players[0], this.ball[0]);
+            if (deltaTime >= environment_1.env.UPDATE_INTERVAL_MS) {
+                for (const match of this.matches) {
+                    if (match.startedAt === -1)
+                        continue;
+                    // console.log(`Delta time: ${deltaTime} update rate ${env.UPDATE_INTERVAL_MS}`);
+                    match.ball.moveBall();
+                    match.ball.checkCollision();
+                    for (const player of match.getPlayersInMatch()) {
+                        if (player.AI) {
+                            this.lowBot(player);
+                        }
+                    }
+                }
                 this.lastUpdate = currentTime;
             }
-        }, constants_1.UPDATE_INTERVAL_MS);
+        }, environment_1.env.UPDATE_INTERVAL_MS);
     }
     stopGameLoop() {
         if (this.gameStatus) {
@@ -68,3 +105,4 @@ class pongEngine {
     }
 }
 exports.Engine = new pongEngine();
+exports.Engine.startGameLoop();

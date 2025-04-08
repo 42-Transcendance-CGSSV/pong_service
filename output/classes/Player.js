@@ -1,26 +1,20 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Player = void 0;
-const dotenv_1 = __importDefault(require("dotenv"));
 const getRandomColor_1 = require("../utils/getRandomColor");
-// import { CANVAS_HEIGHT } from '../utils/constants';
-dotenv_1.default.config();
-let timeMultiplier = Number(process.env.TIME_MULTIPLIER);
+const environment_1 = require("../utils/environment");
+const crypto_1 = require("crypto");
 class Player {
-    constructor(playerID, PlayerName, PaddleHeight, PaddleWidth, canvasHeight, moveSpeed, side, AI) {
+    constructor(PlayerName, currentBellong, side, AI) {
         this.numberOfGoals = 0;
         this.playerColor = (0, getRandomColor_1.getRandomColor)();
         this.AI = true;
-        this.PlayerID = playerID;
+        this.currentBellong = currentBellong;
+        this.PlayerID = (0, crypto_1.randomUUID)();
         this.PlayerName = PlayerName;
-        this.PaddlePos = PaddleHeight / 2;
-        this.PaddleHeight = PaddleHeight;
-        this.PaddleWidth = PaddleWidth;
-        this.canvasHeight = canvasHeight;
-        this.moveSpeed = moveSpeed * timeMultiplier;
+        this.PaddlePos = environment_1.env.CANVAS_HEIGHT / 2 - environment_1.env.PLAYER_PADDLE_HEIGHT / 2;
+        this.PaddleHeight = environment_1.env.PLAYER_PADDLE_HEIGHT;
+        this.PaddleWidth = environment_1.env.PADDLE_WIDTH;
+        this.moveSpeed = environment_1.env.PLAYER_MOVE_SPEED * environment_1.env.TIME_MULTIPLIER;
         this.side = side;
         this.AI = AI !== null && AI !== void 0 ? AI : true;
     }
@@ -33,7 +27,7 @@ class Player {
     }
     ;
     moveDown() {
-        if (this.PaddlePos < this.canvasHeight - this.PaddleHeight)
+        if (this.PaddlePos < environment_1.env.CANVAS_HEIGHT - this.PaddleHeight)
             this.PaddlePos += this.moveSpeed;
     }
     getID() {
@@ -49,18 +43,7 @@ class Player {
         return this.PaddleWidth;
     }
     ExportPlayerInfo() {
-        return ({
-            PlayerID: this.PlayerID,
-            PlayerName: this.PlayerName,
-            PaddlePos: this.PaddlePos,
-            PaddleHeight: this.PaddleHeight,
-            canvasHeight: this.canvasHeight,
-            moveSpeed: this.moveSpeed,
-            side: this.side,
-            numberOfGoals: this.numberOfGoals,
-            playerColor: this.playerColor,
-            AI: this.AI
-        });
+        return this;
     }
 }
-exports.Player = Player;
+exports.default = Player;

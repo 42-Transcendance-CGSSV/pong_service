@@ -6,93 +6,53 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.pongController = pongController;
 const sendItems_1 = require("../utils/sendItems");
 const rate_limit_1 = __importDefault(require("@fastify/rate-limit"));
-const pongPositions = {
-    schema: {
-        response: {
-            200: {
-                type: "array",
-                items: {
-                    type: "object",
-                    properties: {
-                        ballID: { type: "number" },
-                        ballX: { type: "number" },
-                        ballY: { type: "number" },
-                        ballVelocityX: { type: "number" },
-                        ballVelocityY: { type: "number" },
-                        playersInfo: {
-                            type: "array",
-                            items: {
-                                type: "object",
-                                properties: {
-                                    PlayerID: { type: "number" },
-                                    PlayerName: { type: "string" },
-                                    PaddlePos: { type: "number" },
-                                    PaddleHeight: { type: "number" },
-                                    side: { type: "string" },
-                                    playerColor: { type: "string" },
-                                    AI: { type: "boolean" },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-        },
-    },
-    handler: sendItems_1.getAllPositions
-};
-const playerInfo = {
-    schema: {
-        response: {
-            200: {
-                type: "object",
-                properties: {
-                    PlayerID: { type: "number" },
-                    PlayerName: { type: "string" },
-                    PaddlePos: { type: "number" },
-                    PaddleHeight: { type: "number" },
-                    canvasHeight: { type: "number" },
-                    moveSpeed: { type: "number" },
-                    side: { type: "string" },
-                    numberOfGoals: { type: "number" },
-                    playerColor: { type: "string" },
-                    AI: { type: "boolean" },
-                },
-            }
-        }
-    },
-    handler: sendItems_1.getPlayerInfo
-};
-const genPlayer = {
-    schema: {
-        body: {
-            type: "object",
-            properties: {
-                playerID: { type: "number" },
-                PlayerName: { type: "string" },
-                PaddleHeight: { type: "number" },
-                PaddleWidth: { type: "number" },
-                canvasHeight: { type: "number" },
-                moveSpeed: { type: "number" },
-                side: { type: "string" },
-                AI: { type: "boolean" },
-            },
-            required: ["playerID", "PaddleHeight", "PaddleWidth", "canvasHeight", "moveSpeed", "side"],
-        }
-    },
-    handler: sendItems_1.generateNewPlayer
-};
+const player_schema_1 = __importDefault(require("../schemas/player.schema"));
+// import MatchInfo from "../schemas/Match.schema";
+const gen_player_schema_1 = __importDefault(require("../schemas/gen.player.schema"));
 function pongController(fastify, _options, done) {
     fastify.register(rate_limit_1.default, {
         max: 30,
         timeWindow: '1 second'
     });
-    fastify.get(process.env.BASE_ROUTE + "/positions", pongPositions);
-    fastify.get(process.env.BASE_ROUTE + "/player/:PlayerID", playerInfo);
-    fastify.put(process.env.BASE_ROUTE + "/stopGame", sendItems_1.stopGame);
-    fastify.put(process.env.BASE_ROUTE + "/startGame", sendItems_1.startGame);
-    fastify.put(process.env.BASE_ROUTE + "/movePlayerUp/:PlayerID", sendItems_1.movePlayerUP);
-    fastify.put(process.env.BASE_ROUTE + "/movePlayerDown/:PlayerID", sendItems_1.movePlayerDown);
-    fastify.put(process.env.BASE_ROUTE + "/generateNewPlayer", genPlayer);
+    fastify.get(process.env.BASE_ROUTE + "/player/:PlayerID", {
+        // schema:{params: playerInfo},
+        handler: (request, reply) => {
+            (0, sendItems_1.getPlayerInfo)(request, reply);
+        }
+    });
+    fastify.get(process.env.BASE_ROUTE + "/match/:MatchID", {
+        // schema:{params: MatchInfo},
+        handler: (request, reply) => {
+            (0, sendItems_1.getMatchInfo)(request, reply);
+        }
+    });
+    fastify.put(process.env.BASE_ROUTE + "/stopGame/:MatchIndex", {
+        handler: (request, reply) => {
+            (0, sendItems_1.stopGame)(request, reply);
+        }
+    });
+    fastify.put(process.env.BASE_ROUTE + "/startGame/:MatchIndex", {
+        handler: (request, reply) => {
+            (0, sendItems_1.startGame)(request, reply);
+        }
+    });
+    fastify.post(process.env.BASE_ROUTE + "/movePlayerUp/:PlayerID", {
+        schema: { body: player_schema_1.default },
+        handler: (request, reply) => {
+            (0, sendItems_1.movePlayerUP)(request, reply);
+        }
+    });
+    fastify.post(process.env.BASE_ROUTE + "/movePlayerDown/:PlayerID", {
+        schema: { body: player_schema_1.default },
+        handler: (request, reply) => {
+            (0, sendItems_1.movePlayerDown)(request, reply);
+        }
+    });
+    fastify.put(process.env.BASE_ROUTE + "/generateNewPlayer", {
+        schema: { body: gen_player_schema_1.default },
+        handler: (request, reply) => {
+            (0, sendItems_1.generateNewPlayer)(request, reply);
+        }
+    });
     done();
 }
