@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import matchInterface from "../interfaces/match.interface";
 import Ball  from "./Ball";
 import Player from "./Player";
+import { env } from "../utils/environment";
 
 class Match implements matchInterface {
     public              isRunning       : boolean = false;
@@ -12,7 +13,8 @@ class Match implements matchInterface {
     public readonly     scoreGoal       : number;
     public              startedAt       : number;
     public              endedAt         : number;
-    public              winnerId        : string;
+    public              winnerId        : string | null;
+    
 
     public constructor(matchIndex: number, scoreGoal: number) {
         this.MatchIndex = matchIndex;
@@ -20,9 +22,32 @@ class Match implements matchInterface {
         this.scoreGoal = scoreGoal;
         this.startedAt = -1;
         this.endedAt = -1;
-        this.winnerId = "";
+        this.winnerId = null;
 
         this.matchID = randomUUID();
+    }
+
+    public resetMatch(): void {
+        this.isRunning = false;
+        for (const player of this.players) {
+            player.numberOfGoals = 0;
+            player.PaddlePos = env.CANVAS_HEIGHT / 2 - env.PLAYER_PADDLE_HEIGHT / 2;
+        }
+        this.ball.ballX = env.CANVAS_WIDTH / 2;
+        this.ball.ballY = env.CANVAS_HEIGHT / 2;
+    }
+
+    public checkForWinner(): void {
+        for (const player of this.players) {
+            if (player.numberOfGoals >= this.scoreGoal) {
+                this.isRunning = false;
+                this.endedAt = Date.now();
+                this.winnerId = player.PlayerID;
+                console.log(`Player ${player.PlayerName} won the match!`);
+                this.resetMatch();
+                return ;
+            }
+        }
     }
 
     public initNewPlayer(player: Player): void {

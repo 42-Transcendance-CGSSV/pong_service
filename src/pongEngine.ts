@@ -106,14 +106,15 @@ class pongEngine
           {
             if (match.isRunning === false)
               continue;
-            // console.log(`Delta time: ${deltaTime} update rate ${env.UPDATE_INTERVAL_MS}`);
-          match.ball.moveBall();
-          match.ball.checkCollision();
-          for (const player of match.getPlayersInMatch()) {
-            if (player.AI) {
-              this.lowBot(player);
+            
+            match.ball.moveBall();
+            match.ball.checkCollision();
+            match.checkForWinner();
+            for (const player of match.getPlayersInMatch()) {
+              if (player.AI) {
+                this.lowBot(player);
+              }
             }
-          }
         }
         this.lastUpdate = currentTime;
       }
