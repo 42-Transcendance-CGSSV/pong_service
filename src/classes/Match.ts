@@ -4,6 +4,7 @@ import Ball  from "./Ball";
 import Player from "./Player";
 
 class Match implements matchInterface {
+    public              isRunning       : boolean = false;
     public readonly     MatchIndex      : number;
     public readonly     matchID         : string;
     public readonly     ball            : Ball;

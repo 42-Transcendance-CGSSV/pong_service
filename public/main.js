@@ -24,7 +24,7 @@ function startGame() {
 }
 
 function stopGame() {
-    fetch(`${BASE}/stopGame`, { method: 'PUT' })
+    fetch(`${BASE}/stopGame/${gameid}`, { method: 'PUT' })
 }
 
 let polling = false;

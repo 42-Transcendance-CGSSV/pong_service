@@ -75,8 +75,16 @@ export const getPlayerInfo = (request : FastifyRequest , reply: FastifyReply) =>
 
 
 export const stopGame = (_request : FastifyRequest , reply: FastifyReply) => {
-    Engine.stopGameLoop();
-    reply.send({ success: true });
+    const { MatchIndex } = _request.params as { MatchIndex: string };
+    const match = Engine.matches.find((match) => match.MatchIndex === Number(MatchIndex));
+    if (!match) {
+        reply.status(400).send({ success: false, message: `Match not found ${MatchIndex}` });
+        return;
+    }
+    match.endedAt = Date.now();
+    match.isRunning = false;
+    console.log(`Game ${MatchIndex} stoped`);
+    reply.send({ success: true})
 }
 
 export const startGame = (_request : FastifyRequest , reply: FastifyReply) => {
@@ -87,7 +95,8 @@ export const startGame = (_request : FastifyRequest , reply: FastifyReply) => {
         return;
     }
     match.startedAt = Date.now();
-    console.log("Game started");
+    match.isRunning = true;
+    console.log(`Game ${MatchIndex} started`);
     reply.send({ success: true})
 }
 

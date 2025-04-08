@@ -104,7 +104,7 @@ class pongEngine
       if (deltaTime >= env.UPDATE_INTERVAL_MS) {
         for(const match of this.matches)
           {
-            if (match.startedAt === -1)
+            if (match.isRunning === false)
               continue;
             // console.log(`Delta time: ${deltaTime} update rate ${env.UPDATE_INTERVAL_MS}`);
           match.ball.moveBall();

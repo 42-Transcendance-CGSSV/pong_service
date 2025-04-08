@@ -7,8 +7,7 @@
     "build": "tsc -p tsconfig.json",
     "watch": "tsc --watch -p tsconfig.json",
     "start": "tsc -p tsconfig.json && node 'output/app.js'",
-    "lint": "eslint 'src/**/*.ts'",
-    "format": "prettier --write 'src/**/*.ts' 'src/*.ts'"
+    "lint": "eslint 'src/**/*.ts'"
   },
   "author": "guilrodr",
   "license": "GPL-3.0-or-later",
