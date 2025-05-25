@@ -35,6 +35,7 @@ class Match implements matchInterface {
         }
         this.ball.ballX = env.CANVAS_WIDTH / 2;
         this.ball.ballY = env.CANVAS_HEIGHT / 2;
+        this.ball.lastToHit = undefined;
     }
 
     public checkForWinner(): void {
@@ -51,9 +52,9 @@ class Match implements matchInterface {
     }
 
     public initNewPlayer(player: Player): void {
-        if (this.players.length >= 2) {
-            throw new Error("Match is full");
-        }
+        // if (this.players.length >= 2) {
+        //     throw new Error("Match is full");
+        // }
         this.players.push(player);
     }
 

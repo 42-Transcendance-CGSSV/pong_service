@@ -12,11 +12,19 @@ const gameid = prompt("game id :")
 // ###
 // PUT http://localhost:3000/api/movePlayerDown/2 HTTP/1.1
 function moveUp(playerID) {
-    fetch(`${BASE}/movePlayerUp/${playerID}`, { method: 'PUT' })
+    fetch(`${BASE}/movePlayerUp/${playerID}`, {
+       method: 'POST' ,
+       headers : {'Content-Type': 'application/json'},
+       body: JSON.stringify({ playerID }),
+      })
   }
   
   function moveDown(playerID) {  
-    fetch(`${BASE}/movePlayerDown/${playerID}`, { method: 'PUT' })
+    fetch(`${BASE}/movePlayerDown/${playerID}`, { 
+      method: 'POST', 
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({playerID}),
+    })
   }
 
 function startGame() {
@@ -39,7 +47,9 @@ function getPositions() {
     .then(res => res.json())
     .then(data => {
       drawGame(data);
-      // MoveAIs(data);
+      if (data.isRunning) {
+        MoveAIs(data);
+      }
       setTimeout(loop, 17); 
     })
   }
@@ -48,8 +58,9 @@ function getPositions() {
 }
 
 async function MoveAIs(data) {
-  data.forEach(async ball =>{
-    ball.playersInfo.forEach(async player => {
+  // console.log(data);
+
+  data.players.forEach(async player =>{
       if (player.AI === true){
         let res = await fetch(`${BASEAI}/train`, {
           method: 'POST',
@@ -57,13 +68,15 @@ async function MoveAIs(data) {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            AIid : player.PlayerID,
-            ballX: ball.ballX,
-            ballY: ball.ballY,
-            ballSpeedX: ball.ballVelocityX,
-            ballSpeedY: ball.ballVelocityY,
+            playerID : player.PlayerName,
+            ballX: data.ball.ballX,
+            ballY: data.ball.ballY,
+            ballSpeedX: data.ball.ballVelocityX,
+            ballSpeedY: data.ball.ballVelocityY,
             myPosition: player.PaddlePos,
-            PaddleHeight: player.PaddleHeight
+            PaddleHeight: '80',
+            myScore:    player.numberOfGoals,
+            mySide: `${player.side === 'left' ? 0.9 : 0.1}`
           })
         })
         let readyRes = await res.json();
@@ -76,7 +89,7 @@ async function MoveAIs(data) {
         }
       }
     })
-  })
+
 }
 
 function drawGame(data) {
@@ -90,7 +103,6 @@ function drawGame(data) {
   // console.log(data.ball.ballX, data.ball.ballY, data.ballRadius);
   ctx.fillStyle = "white";
   ctx.fill();
-  console.log(data);
       
       // // Draw paddles
       data.players.forEach(player => {

@@ -42,6 +42,7 @@ class Ball implements BallInterface {
       if (this.lastToHit) {
         this.lastToHit.numberOfGoals++;
         console.log(`player ${this.lastToHit.PlayerName} scored :${this.lastToHit.numberOfGoals}`);
+        this.lastToHit = undefined;
       }
     }
     

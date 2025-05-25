@@ -4,6 +4,7 @@ import path from 'path';
 
 import fastify from "fastify";
 import dotenv from "dotenv";
+import cors from "@fastify/cors";
 
 // import items from "./items";
 import {pongController} from "./controllers/controllerPong"; 
@@ -11,6 +12,13 @@ import swaggerUI from "@fastify/swagger-ui";
 import swagger from "@fastify/swagger";
 
 const app = fastify({ logger: false,ajv: { customOptions: { removeAdditional: "all" } } });
+
+app.register(cors, {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+});
+
 app.register(pongController);
 
 

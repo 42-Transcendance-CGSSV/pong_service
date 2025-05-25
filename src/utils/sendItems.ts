@@ -35,7 +35,7 @@ export const getMatchInfo = (request: FastifyRequest, reply: FastifyReply) => {
     if (!match) {
         const NewMatch = Engine.generateMatch(Number(MatchID));
         if (!NewMatch) {
-            reply.status(500).send({ message: " mach now faund and failed to create new match" });
+            reply.status(501).send({ message: " mach now faund and failed to create new match" });
             return;
         }
         reply.status(200).send(NewMatch.exportMatchInfo());

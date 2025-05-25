@@ -51,11 +51,27 @@ class pongEngine
 
   public generateMatch(matchIndex: number) : Match
   {
-    let match = new Match(matchIndex, 3);
+    let match = new Match(matchIndex, 500);
+    const player0 = new Player("alex", matchIndex, "right");
     const player1 = new Player("jean marc", matchIndex, "left");
-    const player2 = new Player("alex", matchIndex, "right");
+    // const player2 = new Player("pedro", matchIndex, "right");
+    // const player3 = new Player("fiphy", matchIndex, "left");
+    // const player4 = new Player("manu", matchIndex, "right");
+    // const player5 = new Player("paolo", matchIndex, "left");
+    // const player6 = new Player("lucas", matchIndex, "right");
+    // const player7 = new Player("isis", matchIndex, "left");
+    // const player8 = new Player("manon", matchIndex, "right");
+    // const player9 = new Player("gaow", matchIndex, "left");
+    match.initNewPlayer(player0);
     match.initNewPlayer(player1);
-    match.initNewPlayer(player2); // TODO: should be done by the client
+    // match.initNewPlayer(player2);
+    // match.initNewPlayer(player3);
+    // match.initNewPlayer(player4);
+    // match.initNewPlayer(player5);
+    // match.initNewPlayer(player6);
+    // match.initNewPlayer(player7);
+    // match.initNewPlayer(player8);
+    // match.initNewPlayer(player9); // TODO: should be done by the client
     this.matches.push(match);
     return match;
   }
@@ -110,11 +126,11 @@ class pongEngine
             match.ball.moveBall();
             match.ball.checkCollision();
             match.checkForWinner();
-            for (const player of match.getPlayersInMatch()) {
-              if (player.AI) {
-                this.lowBot(player);
-              }
-            }
+            // for (const player of match.getPlayersInMatch()) {
+            //   if (player.AI) {
+            //     this.lowBot(player);
+            //   }
+            // }
         }
         this.lastUpdate = currentTime;
       }
