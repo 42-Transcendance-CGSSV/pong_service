@@ -1,6 +1,6 @@
-interface IBasicResponse {
+export interface IBasicResponse {
     success: boolean;
-    message: string;
+    message?: string;
 }
 
 export interface ISuccessResponse extends IBasicResponse {
