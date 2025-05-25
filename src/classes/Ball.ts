@@ -1,8 +1,8 @@
-import {Engine} from "../pongEngine";
 import {env} from "../utils/environment";
 import Player from "./Player";
 
 import BallInterface from "../interfaces/ball.interface";
+import MatchManager from "../managers/match.manager";
 
 
 class Ball implements BallInterface {
@@ -45,7 +45,7 @@ class Ball implements BallInterface {
             }
         }
 
-        const playersInGame = Engine.getPlayersByBall(this);
+        const playersInGame = MatchManager.getInstance().getPlayersByBall(this);
         if (!playersInGame) {
             return;
         }

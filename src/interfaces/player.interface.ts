@@ -1,6 +1,6 @@
 interface PlayerInterface {
     PlayerID        : string;
-    currentBellong  : number;
+    currentMatchId  : string;
     PlayerName      : string;
     PaddlePos       : number;
     moveSpeed       : number;

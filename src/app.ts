@@ -8,6 +8,7 @@ import {EventEmitter} from "events"
 import {pongController} from "./controllers/controller.game";
 import {env} from "./utils/environment";
 import {registerGameListeners} from "./listeners/game.listeners";
+import {Engine} from "./pongEngine";
 
 const app = fastify({logger: true, ajv: {customOptions: {removeAdditional: "all"}}});
 export const eventEmitter = new EventEmitter();
@@ -17,6 +18,8 @@ dotenv.config();
 //TODO: FIXING ENV UNDEFINED
 function start(): void {
     try {
+        Engine.startGameLoop();
+
         app.register(websockets);
         app.register(pongController);
 

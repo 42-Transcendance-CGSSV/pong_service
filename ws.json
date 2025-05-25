@@ -1,0 +1,13 @@
+{
+  "channel": "create-match",
+  "data": {
+    "users": {
+      "1": {
+        "id": "0"
+      },
+      "2": {
+        "id": "2"
+      }
+    }
+  }
+}
