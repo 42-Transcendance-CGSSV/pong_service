@@ -3,6 +3,7 @@ import Player from "./Player";
 
 import BallInterface from "../interfaces/ball.interface";
 import MatchManager from "../managers/match.manager";
+import {normalizePosition} from "../utils/maths";
 
 
 class Ball implements BallInterface {
@@ -39,8 +40,8 @@ class Ball implements BallInterface {
             this.ballVelocityX = -this.ballVelocityX;
             this.ballVelocityY = Math.floor(Math.random() * 10) - 5;
             if (this.lastToHit) {
-                this.lastToHit.numberOfGoals++;
-                console.log(`player ${this.lastToHit.PlayerName} scored :${this.lastToHit.numberOfGoals}`);
+                this.lastToHit.score++;
+                console.log(`player ${this.lastToHit.PlayerName} scored :${this.lastToHit.score}`);
                 this.lastToHit = undefined;
             }
         }
@@ -80,11 +81,14 @@ class Ball implements BallInterface {
                 break;
             }
         }
-        ;
     }
 
-    public ExportBallInfo(): BallInterface {
-        return this;
+    public ExportBallInfo() {
+        return {
+            ballRadius: this.ballRadius,
+            relativeBallX: normalizePosition(this.ballX, env.CANVAS_WIDTH, 0),
+            relativeBallY: normalizePosition(this.ballY, env.CANVAS_HEIGHT, 0)
+        };
     }
 }
 

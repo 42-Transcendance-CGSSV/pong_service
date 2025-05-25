@@ -6,33 +6,19 @@ export default class MatchManager {
 
     public readonly matches: Match[] = [];
     private static instance: MatchManager | null = null;
+    private matchCounter: number = 0;
 
     public createMatch(scoreGoal: number): Match {
         let match = new Match(scoreGoal);
         this.matches.push(match);
+        this.matchCounter++;
         return match;
-    }
-
-    public addPlayersToMatch(match: Match, players: Player[]): void {
-        if (!this.matches.includes(match)) throw new Error("Match not found in MatchManager.");
-
-        for (const player of players) {
-            match.addPlayer(player.PlayerName, player.AI);
-        }
     }
 
     public removeMatch(match: Match): void {
         if (this.matches.includes(match)) {
             this.matches.splice(this.matches.indexOf(match), 1);
         }
-    }
-
-    public addPlayerToMatch(player: Player, matchId: string): void {
-        const match = this.getMatchById(matchId);
-        if (!match) {
-            throw new Error(`Match with ID ${matchId} not found.`);
-        }
-        match.addPlayer(player.PlayerName, player.AI);
     }
 
     public countMatches(): number {

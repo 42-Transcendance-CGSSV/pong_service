@@ -29,7 +29,7 @@ class Match implements matchInterface {
     public resetMatch(): void {
         this.isRunning = false;
         for (const player of this.players) {
-            player.numberOfGoals = 0;
+            player.score = 0;
             player.PaddlePos = env.CANVAS_HEIGHT / 2 - env.PLAYER_PADDLE_HEIGHT / 2;
         }
         this.ball.ballX = env.CANVAS_WIDTH / 2;
@@ -39,7 +39,7 @@ class Match implements matchInterface {
 
     public checkForWinner(): void {
         for (const player of this.players) {
-            if (player.numberOfGoals >= this.scoreGoal) {
+            if (player.score >= this.scoreGoal) {
                 this.isRunning = false;
                 this.endedAt = Date.now();
                 this.winnerId = player.PlayerID;
@@ -50,12 +50,12 @@ class Match implements matchInterface {
         }
     }
 
-    public addPlayer(PlayerName: string, AI?: boolean): void {
+    public addPlayer(PlayerName: string, playerId: string, AI?: boolean): void {
         let side: "right" | "left" = "left";
         if (this.players && this.players[0]) {
             side = this.players[0].getSide() === "left" ? "right" : "left";
         }
-        let player = new Player(PlayerName, this.matchID, side, AI);
+        let player = new Player(PlayerName, playerId, this.matchID, side, AI);
         this.players.push(player);
     }
 

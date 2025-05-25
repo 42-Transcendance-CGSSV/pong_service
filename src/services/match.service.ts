@@ -1,14 +1,15 @@
 import {IBasicResponse} from "../interfaces/response.interface";
 import MatchManager from "../managers/match.manager";
+import Match from "../classes/Match";
 
 
-export function playerJoinMatch(playerName: string, matchId: string, AI: boolean = false): IBasicResponse {
+export function playerJoinMatch(playerName: string, playerId: string, matchId: string, AI: boolean = false): IBasicResponse {
     const match = MatchManager.getInstance().getMatchById(matchId)
 
     if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
     if (match.isExpired()) return {success: false, message: "Match expired"} as IBasicResponse;
 
-    match.addPlayer(playerName, AI);
+    match.addPlayer(playerName, playerId, AI);
     return {success: true, message: "Player joined the match"} as IBasicResponse;
 }
 
@@ -48,14 +49,11 @@ export function togglePauseMatch(matchId: string): IBasicResponse {
     return {success: true, message: message} as IBasicResponse;
 }
 
-export function startMatch(matchId: string): IBasicResponse {
-    const match = MatchManager.getInstance().getMatchById(matchId);
-    if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
-
+export function startMatch(match: Match): IBasicResponse {
     match.startedAt = Date.now();
     match.isRunning = true;
 
-    const message = "Game " + matchId + " started";
+    const message = "Game " + match.matchID + " started";
 
     console.log(message)
     return {success: true, message: message} as IBasicResponse;

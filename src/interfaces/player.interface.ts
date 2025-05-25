@@ -5,7 +5,7 @@ interface PlayerInterface {
     PaddlePos       : number;
     moveSpeed       : number;
     side            : string;
-    numberOfGoals   : number;
+    score   : number;
     playerColor     : string;
     AI              : boolean;
 }

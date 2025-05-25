@@ -43,19 +43,4 @@ export function registerGameListeners(_app: FastifyInstance): void {
             //TODO: Add error handling for missing match_id
         }
     })
-
-    eventEmitter.on("ws-message:create-match", (data: any, _socket: WebSocket) => {
-        if (data && typeof data === "object") {
-            if (data["users"] && typeof data["users"] === "object") {
-                console.log(data)
-            }
-            //TODO: Add error handling for missing match_id
-        }
-    })
-
-
-    //Service qui va creer un match
-    // Et il va envoyer les joueurs dedans
-
-
 }

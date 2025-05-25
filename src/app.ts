@@ -9,6 +9,7 @@ import {pongController} from "./controllers/controller.game";
 import {env} from "./utils/environment";
 import {registerGameListeners} from "./listeners/game.listeners";
 import {Engine} from "./pongEngine";
+import {registerSocketCoreListeners} from "./listeners/core.listeners";
 
 const app = fastify({logger: true, ajv: {customOptions: {removeAdditional: "all"}}});
 export const eventEmitter = new EventEmitter();
@@ -23,6 +24,7 @@ function start(): void {
         app.register(websockets);
         app.register(pongController);
 
+        registerSocketCoreListeners(app);
         registerGameListeners(app);
         app.register(cors, {
             origin: "*",

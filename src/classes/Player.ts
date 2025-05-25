@@ -1,7 +1,7 @@
 import {getRandomColor} from '../utils/getRandomColor';
 import {env} from '../utils/environment';
 import PlayerInterface from '../interfaces/player.interface';
-import {randomUUID} from 'crypto';
+import {normalizePosition} from "../utils/maths";
 
 
 class Player implements PlayerInterface {
@@ -10,69 +10,60 @@ class Player implements PlayerInterface {
     public moveSpeed: number;
     public readonly PaddleWidth: number;
     public readonly PaddleHeight: number;
-    public numberOfGoals: number = 0;
+    public score: number = 0;
     public currentMatchId: string;
     public readonly side: "right" | "left";
     public readonly PlayerID: string;
     public readonly PlayerName: string;
     public readonly playerColor: string = getRandomColor();
-    public PlayerStats: PlayerStatsInterface;
+    public ready: boolean = false;
 
-    constructor(PlayerName: string, currentMatchId: string, side: "right" | "left", AI?: boolean) {
+    constructor(PlayerName: string, playerId: string, currentMatchId: string, side: "left" | "right", AI?: boolean) {
         this.currentMatchId = currentMatchId;
-        this.PlayerID = randomUUID();
+        this.PlayerID = playerId;  //TODO: Replace with number
+        this.side = side;
         this.PlayerName = PlayerName;
         this.PaddlePos = env.CANVAS_HEIGHT / 2 - env.PLAYER_PADDLE_HEIGHT / 2;
         this.PaddleHeight = env.PLAYER_PADDLE_HEIGHT;
         this.PaddleWidth = env.PADDLE_WIDTH;
         this.moveSpeed = env.PLAYER_MOVE_SPEED * env.TIME_MULTIPLIER;
-        this.side = side;
         this.AI = AI ?? true;
-
-        this.PlayerStats = {
-            bestScore: null,
-            maxWinsInARow: null,
-            maxLosesInARow: null,
-            totalGames: null,
-            totalWins: null,
-            totalLoses: null,
-        }
     }
 
-    moveUp() {
+    public moveUp() {
         if (this.PaddlePos > 0)
             this.PaddlePos -= this.moveSpeed;
     };
 
-    moveDown() {
+    public moveDown() {
         if (this.PaddlePos < env.CANVAS_HEIGHT - this.PaddleHeight)
             this.PaddlePos += this.moveSpeed;
     }
 
-    getSide() {
+    public getSide() {
         return this.side;
     }
 
-    getID() {
+    public getID() {
         return this.PlayerID;
     }
 
-    getPos() {
+    public getPos() {
         return this.PaddlePos;
     }
 
-    getPaddleHeight() {
+    public getPaddleHeight() {
         return this.PaddleHeight;
     }
 
-    getPaddleWidth() {
+    public getPaddleWidth() {
         return this.PaddleWidth;
     }
 
-    ExportPlayerInfo() {
-
-        return this;
+    public ExportPlayerInfo() {
+        return {...this, relativeY: normalizePosition(this.PaddlePos, env.CANVAS_HEIGHT, 0)};
     }
+
 }
 
 export default Player;
