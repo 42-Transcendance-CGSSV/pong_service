@@ -23,8 +23,13 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
 
                         if (data && typeof data === 'object' && 'channel' in data) {
                             const receivedData: unknown | undefined = 'data' in data ? data.data : undefined;
+                            if (data.channel === "identify" && receivedData && typeof receivedData === "object" && "user_id" in receivedData) {
+                                eventEmitter.emit("ws-identify", receivedData, socket);
+                                return;
+                            }
                             eventEmitter.emit("ws-message", new WsEvent(data.channel as string, receivedData), socket);
                             eventEmitter.emit("ws-message:" + data.channel, receivedData, socket);
+
                         }
 
                     } catch (error) {
