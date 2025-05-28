@@ -60,9 +60,10 @@ class Ball implements BallInterface {
                 this.ballX - this.ballRadius < player.getPaddleWidth() &&
                 this.ballY > player.getPos() &&
                 this.ballY < player.getPos() + player.getPaddleHeight()) {
+
                 this.ballVelocityX = -this.ballVelocityX;
-                this.ballVelocityX += 1;
-                this.ballVelocityY += Math.floor(Math.random() * 10) - 5;
+                this.ballVelocityX += 2;
+                this.ballVelocityY += Math.floor(Math.random() * 10) + 2;   
                 this.lastToHit = player;
                 break;
             }
@@ -74,8 +75,8 @@ class Ball implements BallInterface {
                 // console.log(this.ballRadius);
                 // console.log("hereeee");
                 this.ballVelocityX = -this.ballVelocityX;
-                this.ballVelocityX += 1;
-                this.ballVelocityY += Math.floor(Math.random() * 10) - 5;
+                this.ballVelocityX += 2;
+                this.ballVelocityY += Math.floor(Math.random() * 10) + 2;
                 // console.log(this.ballVelocityX , this.ballVelocityY);
                 this.lastToHit = player;
                 break;

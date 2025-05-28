@@ -11,7 +11,7 @@ export const env = {
     CANVAS_HEIGHT: Number(process.env.CANVAS_HEIGHT) || 600,
     UPDATE_INTERVAL_MS: Number(process.env.UPDATE_INTERVAL_MS) || 16,
 
-    PLAYER_MOVE_SPEED: Number(process.env.PLAYER_MOVE_SPEED) || 6,
+    PLAYER_MOVE_SPEED: Number(process.env.PLAYER_MOVE_SPEED) || 12,
     PLAYER_PADDLE_HEIGHT: Number(process.env.PLAYER_PADDLE_HEIGHT) || 80,
     PLAYER_PADDLE_WIDTH: Number(process.env.PLAYER_PADDLE_WIDTH) || 10,
 };

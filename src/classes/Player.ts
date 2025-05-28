@@ -26,7 +26,7 @@ class Player implements PlayerInterface {
         this.PaddlePos = env.CANVAS_HEIGHT / 2 - env.PLAYER_PADDLE_HEIGHT / 2;
         this.PaddleHeight = env.PLAYER_PADDLE_HEIGHT;
         this.PaddleWidth = env.PADDLE_WIDTH;
-        this.moveSpeed = env.PLAYER_MOVE_SPEED * env.TIME_MULTIPLIER;
+        this.moveSpeed = 12;
         this.AI = AI ?? true;
     }
 

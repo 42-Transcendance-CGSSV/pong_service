@@ -16,7 +16,6 @@ export const eventEmitter = new EventEmitter();
 
 dotenv.config();
 
-//TODO: FIXING ENV UNDEFINED
 function start(): void {
     try {
         Engine.startGameLoop();
