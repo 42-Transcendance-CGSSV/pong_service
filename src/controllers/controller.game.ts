@@ -55,15 +55,15 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
     });
 
     interface IInitPlayers {
-        matchId: string;
+        match_id: number;
         player_1: {
             player_name: string;
-            user_id: string;
+            user_id: number;
             is_ai: boolean;
         },
         player_2: {
             player_name: string;
-            user_id: string;
+            user_id: number;
             is_ai: boolean;
         }
     }
@@ -72,19 +72,24 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
         schema: {body: initPlayersSchemas},
         handler: async (request: FastifyRequest, reply: FastifyReply) => {
             if (!request.body)
-                return reply.status(400).send({success: false, message: "No matchId provided"} as IBasicResponse); //TODO replace with APiError
+                return reply.status(400).send({success: false, message: "No match_id provided"} as IBasicResponse); //TODO replace with APiError
+            console.log("HEEERE")
             const body = request.body as IInitPlayers;
+            console.log("HEEERE 2")
+            console.log("deebug ",body.player_1.user_id, body.player_2.user_id)
+            if (MatchManager.getInstance().getMatchByPlayer_id(body.player_1.user_id )) throw new Error("Player1 already in a match");
+            console.log("HEEERE 2.5")
+            if (MatchManager.getInstance().getMatchByPlayer_id(body.player_2.user_id)) throw new Error("Player2 already in a match");
 
-            if (MatchManager.getInstance().getMatchByPlayerId(body.player_1.user_id)) throw new Error("Player1 already in a match");
-            if (MatchManager.getInstance().getMatchByPlayerId(body.player_2.user_id)) throw new Error("Player2 already in a match");
 
-
-            const match = MatchManager.getInstance().getMatchById(body.matchId);
+            const match = MatchManager.getInstance().getMatchById(body.match_id);
+            console.log("HEEERE 3")
             if (!match) {
-                throw Error("Match not found"); //TODO: replace with APiError
+                throw Error("Match not found here"); //TODO: replace with APiError
             }
             match.addPlayer(body.player_1.player_name, body.player_1.user_id, body.player_1.is_ai)
             match.addPlayer(body.player_2.player_name, body.player_2.user_id, body.player_2.is_ai);
+            console.log("HEEERE 4")
             reply.send({
                 success: true,
                 message: "The match has been created",
@@ -98,8 +103,8 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
         handler: (request: FastifyRequest, reply: FastifyReply) => {
             if (!(request.params && typeof request.params === "object" && "user_id" in request.params))
                 throw new Error("Invalid request");
-            const userId = request.params.user_id as string;
-            const match = MatchManager.getInstance().getMatchByPlayerId(userId);
+            const userId = request.params.user_id as number;
+            const match = MatchManager.getInstance().getMatchByPlayer_id(userId);
             if (!match) throw new Error("Match not found for this user");
             const player = match.getPlayerById(userId);
             if (!player) throw new Error("Player not found in this match");
@@ -113,8 +118,8 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
             handler: (request: FastifyRequest, reply: FastifyReply) => {
                 if (!(request.params && typeof request.params === "object" && "match_id" in request.params))
                     throw new Error("Invalid request");
-                const matchId = request.params.match_id as string;
-                const match = MatchManager.getInstance().getMatchById(matchId);
+                const match_id = request.params.match_id as number;
+                const match = MatchManager.getInstance().getMatchById(match_id);
                 if (!match) throw new Error("Match not found for this user");
                 const isReady = match.getPlayersInMatch().every(p => p.ready);
                 if (isReady) {

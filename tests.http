@@ -25,10 +25,37 @@ PUT http://localhost:3000/api/generateNewPlayer
 Content-Type: application/json
 
 {
-  "playerID": 16,
+  "Player_id": 16,
   "PaddleHeight": 80,
   "PaddleWidth": 10,
   "canvasHeight": 600,
   "moveSpeed": 4,
   "side": "right"
 }
+/*
+curl -X PUT http://localhost:3000/api/match/create
+
+curl -X PUT http://localhost:3000/api/match/init-players \
+  -H "Content-Type: application/json" \
+  -d '{
+    "match_id": 0,
+    "player_1": {
+      "player_name": "Alice",
+      "user_id": 123,
+      "is_ai": false
+    },
+    "player_2": {
+      "player_name": "Bob",
+      "user_id": 456,
+      "is_ai": false
+    }
+  }'
+
+
+{
+  "channel": "get-match-data",
+  "data": {
+    "match_id": 1
+  }
+}
+*/

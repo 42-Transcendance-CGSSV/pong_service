@@ -1,10 +1,11 @@
+import BallExportinfo from "./ball.info.interface";
 import PlayerInterface from "./player.interface";
-import BallInterface from "./ball.interface";
 
-interface matchInterface {
+interface MatchExportInterface {
+    isRunning: boolean;
     match_id: number;
     players: PlayerInterface[];
-    ball: BallInterface;
+    ball: BallExportinfo;
     scoreGoal: number;
     startedAt: number;
     pausedAt: number;
@@ -12,4 +13,4 @@ interface matchInterface {
     winner_id: number;
 }
 
-export default matchInterface;
+export default MatchExportInterface;

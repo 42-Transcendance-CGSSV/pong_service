@@ -29,8 +29,19 @@ export default class MatchManager {
         return this.matches.filter(match => match.players.length < 2 && !match.isRunning);
     }
 
-    public getMatchById(matchID: string): Match | undefined {
-        return this.matches.find(match => match.matchID === matchID);
+    public getMatchById(match_id: number): Match | undefined {
+        let tmp:Match | undefined = undefined;
+        for (const match of this.matches) {
+            if (!match)
+                continue;
+            // console.log("Checking match with ID:", typeof(match.match_id) + " against " + typeof(match_id));
+            if (match.match_id === match_id as number) {
+                tmp = match;
+                // console.log("Match found with ID:", match.match_id);
+                break;
+            }
+        }
+        return tmp;
     }
 
     public getMatchByBall(ball: Ball): Match | null {
@@ -53,11 +64,11 @@ export default class MatchManager {
         return null;
     }
 
-    public getMatchByPlayerId(playerId: string): Match | null {
+    public getMatchByPlayer_id(Player_id: number): Match | null {
         for (const match of this.matches) {
             if (!match)
                 continue;
-            if (match.players.find(player => player.PlayerID === playerId))
+            if (match.players.find(player => player.Player_id === Player_id))
                 return match;
         }
         return null;

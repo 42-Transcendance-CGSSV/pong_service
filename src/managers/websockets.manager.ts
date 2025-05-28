@@ -1,6 +1,6 @@
 type PlayerSocket = {
     socket: WebSocket;
-    playerId?: string;
+    Player_id?: number;
 }
 
 export default class WebsocketsManager {
@@ -9,26 +9,26 @@ export default class WebsocketsManager {
     private static instance: WebsocketsManager | null = null;
 
     public addConnection(socket: WebSocket): void {
-        this.connections.add({socket, playerId: undefined} as PlayerSocket);
+        this.connections.add({socket, Player_id: undefined} as PlayerSocket);
     }
 
     public removeConnection(socket: WebSocket): void {
-        this.connections.delete({socket, playerId: undefined} as PlayerSocket);
+        this.connections.delete({socket, Player_id: undefined} as PlayerSocket);
     }
 
-    public updateIdentity(socket: WebSocket, playerId: string): boolean {
+    public updateIdentity(socket: WebSocket, Player_id: number): boolean {
         for (const con of this.connections) {
             if (con.socket === socket) {
-                con.playerId = playerId;
+                con.Player_id = Player_id;
                 return true;
             }
         }
         return false;
     }
 
-    public removeConnectionFromId(playerId: string): boolean {
+    public removeConnectionFromId(Player_id: number): boolean {
         for (const playerSocket of this.connections) {
-            if (playerSocket.playerId === playerId) {
+            if (playerSocket.Player_id === Player_id) {
                 this.connections.delete(playerSocket);
                 return true;
             }

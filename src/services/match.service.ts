@@ -3,47 +3,55 @@ import MatchManager from "../managers/match.manager";
 import Match from "../classes/Match";
 
 
-export function playerJoinMatch(playerName: string, playerId: string, matchId: string, AI: boolean = false): IBasicResponse {
-    const match = MatchManager.getInstance().getMatchById(matchId)
+export function playerJoinMatch(playerName: string, Player_id: number, match_id: number, AI: boolean = false): IBasicResponse {
+    const match = MatchManager.getInstance().getMatchById(match_id)
 
     if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
     if (match.isExpired()) return {success: false, message: "Match expired"} as IBasicResponse;
 
-    match.addPlayer(playerName, playerId, AI);
+    match.addPlayer(playerName, Player_id, AI);
     return {success: true, message: "Player joined the match"} as IBasicResponse;
 }
 
 
-export function getMatchData(matchId: string): IBasicResponse {
-    const match = MatchManager.getInstance().getMatchById(matchId);
+export function getMatchData(match_id: number): IBasicResponse {
+    const match = MatchManager.getInstance().getMatchById(match_id);
     if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
-
-    return {success: true, message: "Match found", data: match} as IBasicResponse;
+    
+    // console.log("Match data retrieved for match_id:", match_id, "INFO", match.ExportMatchInfo());
+    return {success: true, message: "Match found", data: match.ExportMatchInfo()} as IBasicResponse;
 }
 
+// export function getBallData(match_id: number): IBasicResponse {
+//     const match = MatchManager.getInstance().getMatchById(match_id);
+//     if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
+    
+//     return {success: true, message: "Match found", data: match.ball.ExportBallInfo()} as IBasicResponse;
+// }
 
-export function getPlayerData(playerId: string): IBasicResponse {
 
-    const match = MatchManager.getInstance().getMatchByPlayerId(playerId);
+export function getPlayerData(Player_id: number): IBasicResponse {
+
+    const match = MatchManager.getInstance().getMatchByPlayer_id(Player_id);
     if (!match) return {
         success: false,
         message: "Unable to find a match with this player inside !"
     } as IBasicResponse;
-    const player = match.getPlayerById(playerId);
+    const player = match.getPlayerById(Player_id);
     if (!player) return {success: false, message: "Unable to find the player in this match !"} as IBasicResponse;
     return {success: true, message: "Player found", data: player.ExportPlayerInfo()} as IBasicResponse;
 }
 
 
-export function togglePauseMatch(matchId: string): IBasicResponse {
-    const match = MatchManager.getInstance().getMatchById(matchId);
+export function togglePauseMatch(match_id: number): IBasicResponse {
+    const match = MatchManager.getInstance().getMatchById(match_id);
     if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
 
 
     match.pausedAt = match.pausedAt === -1 ? Date.now() : -1;
     match.isRunning = !match.isRunning;
 
-    const message = match.isRunning ? `Game ${matchId} resumed` : `Game ${matchId} paused`;
+    const message = match.isRunning ? `Game ${match_id} resumed` : `Game ${match_id} paused`;
 
     console.log(message)
     return {success: true, message: message} as IBasicResponse;
@@ -53,20 +61,20 @@ export function startMatch(match: Match): IBasicResponse {
     match.startedAt = Date.now();
     match.isRunning = true;
 
-    const message = "Game " + match.matchID + " started";
+    const message = "Game " + match.match_id + " started";
 
     console.log(message)
     return {success: true, message: message} as IBasicResponse;
 }
 
-export function endMatch(matchId: string): IBasicResponse {
-    const match = MatchManager.getInstance().getMatchById(matchId);
+export function endMatch(match_id: number): IBasicResponse {
+    const match = MatchManager.getInstance().getMatchById(match_id);
     if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
 
     match.startedAt = -1;
     match.isRunning = false;
 
-    const message = "Game " + matchId + " ended";
+    const message = "Game " + match_id + " ended";
 
     console.log(message)
     //TODO: send stats to sami
@@ -75,11 +83,11 @@ export function endMatch(matchId: string): IBasicResponse {
 }
 
 
-export function movePaddle(playerId: string, direction: "up" | "down"): IBasicResponse {
-    const match = MatchManager.getInstance().getMatchByPlayerId(playerId);
+export function movePaddle(Player_id: number, direction: "up" | "down"): IBasicResponse {
+    const match = MatchManager.getInstance().getMatchByPlayer_id(Player_id);
     if (!match) return {success: false, message: "Unable to find a match with this player inside !"} as IBasicResponse;
 
-    const player = match.getPlayerById(playerId);
+    const player = match.getPlayerById(Player_id);
     if (!player) return {success: false, message: "Unable to find the player in this match !"} as IBasicResponse;
 
     direction === "down" ? player.moveDown() : player.moveUp();

@@ -1,19 +1,19 @@
-import {randomUUID} from "crypto";
 import matchInterface from "../interfaces/match.interface";
 import Ball from "./Ball";
 import Player from "./Player";
 import {env} from "../utils/environment";
+import MatchExportInterface from "../interfaces/match.export.interface";
 
 class Match implements matchInterface {
     public isRunning: boolean = false;
-    public readonly matchID: string;
+    public readonly match_id: number = 0;
     public readonly ball: Ball;
     public players: Player[] = [];
     public readonly scoreGoal: number;
     public startedAt: number;
     public pausedAt: number = -1;
     public endedAt: number;
-    public winnerId: string | null;
+    public winner_id: number = -1;
 
 
     public constructor(scoreGoal: number) {
@@ -21,9 +21,9 @@ class Match implements matchInterface {
         this.scoreGoal = scoreGoal;
         this.startedAt = -1;
         this.endedAt = -1;
-        this.winnerId = null;
+        this.winner_id = -1;
 
-        this.matchID = randomUUID();
+        this.match_id = this.match_id++; // TODO: Replace with a proper ID generator
     }
 
     public resetMatch(): void {
@@ -42,7 +42,7 @@ class Match implements matchInterface {
             if (player.score >= this.scoreGoal) {
                 this.isRunning = false;
                 this.endedAt = Date.now();
-                this.winnerId = player.PlayerID;
+                this.winner_id = player.Player_id;
                 console.log(`Player ${player.PlayerName} won the match!`);
                 this.resetMatch();
                 return;
@@ -50,12 +50,12 @@ class Match implements matchInterface {
         }
     }
 
-    public addPlayer(PlayerName: string, playerId: string, AI?: boolean): void {
+    public addPlayer(PlayerName: string, Player_id: number, AI?: boolean): void {
         let side: "right" | "left" = "left";
         if (this.players && this.players[0]) {
             side = this.players[0].getSide() === "left" ? "right" : "left";
         }
-        let player = new Player(PlayerName, playerId, this.matchID, side, AI);
+        let player = new Player(PlayerName, Player_id, this.match_id, side, AI);
         this.players.push(player);
     }
 
@@ -67,8 +67,8 @@ class Match implements matchInterface {
         return this.players.includes(player);
     }
 
-    public getPlayerById(playerId: string): Player | undefined {
-        return this.players.find(player => player.PlayerID === playerId);
+    public getPlayerById(Player_id: number): Player | undefined {
+        return this.players.find(player => player.Player_id === Player_id);
     }
 
 
@@ -78,6 +78,20 @@ class Match implements matchInterface {
 
     public isSameBall(ball: Ball): boolean {
         return ball === this.ball;
+    }
+
+    public ExportMatchInfo(): MatchExportInterface {
+        return {
+            isRunning: this.isRunning,
+            match_id: this.match_id,
+            ball: this.ball.ExportBallInfo(),
+            players: this.players.map(player => player.ExportPlayerInfo()),
+            scoreGoal: this.scoreGoal,
+            startedAt: this.startedAt,
+            pausedAt: this.pausedAt,
+            endedAt: this.endedAt,
+            winner_id: this.winner_id
+        };
     }
 }
 

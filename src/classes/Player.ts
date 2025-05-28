@@ -11,16 +11,16 @@ class Player implements PlayerInterface {
     public readonly PaddleWidth: number;
     public readonly PaddleHeight: number;
     public score: number = 0;
-    public currentMatchId: string;
+    public currentmatch_id: number;
     public readonly side: "right" | "left";
-    public readonly PlayerID: string;
+    public readonly Player_id: number;
     public readonly PlayerName: string;
     public readonly playerColor: string = getRandomColor();
     public ready: boolean = false;
 
-    constructor(PlayerName: string, playerId: string, currentMatchId: string, side: "left" | "right", AI?: boolean) {
-        this.currentMatchId = currentMatchId;
-        this.PlayerID = playerId;  //TODO: Replace with number
+    constructor(PlayerName: string, Player_id: number, currentmatch_id: number, side: "left" | "right", AI?: boolean) {
+        this.currentmatch_id = currentmatch_id;
+        this.Player_id = Player_id;  //TODO: Replace with number
         this.side = side;
         this.PlayerName = PlayerName;
         this.PaddlePos = env.CANVAS_HEIGHT / 2 - env.PLAYER_PADDLE_HEIGHT / 2;
@@ -45,7 +45,7 @@ class Player implements PlayerInterface {
     }
 
     public getID() {
-        return this.PlayerID;
+        return this.Player_id;
     }
 
     public getPos() {
@@ -61,7 +61,7 @@ class Player implements PlayerInterface {
     }
 
     public ExportPlayerInfo() {
-        return {...this, relativeY: normalizePosition(this.PaddlePos, env.CANVAS_HEIGHT, 0)};
+        return {...this, relativeY: normalizePosition(this.PaddlePos + env.PLAYER_PADDLE_HEIGHT / 2, env.CANVAS_HEIGHT, 0)};
     }
 
 }

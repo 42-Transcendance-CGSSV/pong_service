@@ -11,7 +11,7 @@ export function registerSocketCoreListeners(app: FastifyInstance): void {
 
     //TODO: IMPLEMENT IDENTIFY
     eventEmitter.on("ws-identify", (data: any, socket: WebSocket) => {
-        if (data && typeof data === "object" && data["user_id"] && typeof data["user_id"] === "string") {
+        if (data && typeof data === "object" && data["user_id"] && typeof data["user_id"] === "number") {
             if (!WebsocketsManager.getInstance().updateIdentity(socket, data["user_id"])) {
                 {
                     app.log.error(`WebSocket identify error: Unable to update identity for user_id ${data["user_id"]}`);
