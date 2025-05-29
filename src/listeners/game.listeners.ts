@@ -1,6 +1,7 @@
 import {eventEmitter} from "../app";
 import {FastifyInstance} from "fastify";
-import {getMatchData, getPlayerData, movePaddle, togglePauseMatch} from "../services/match.service";
+import { getAiNeeds, getMatchById, getMatchData, getPlayerData,  movePaddle, togglePauseMatch} from "../services/match.service";
+import Match from "../classes/Match";
 
 export function registerGameListeners(_app: FastifyInstance): void {
 
@@ -39,10 +40,17 @@ export function registerGameListeners(_app: FastifyInstance): void {
     });
 
     eventEmitter.on("ws-message:get-match-data", (data: any, socket: WebSocket) => {
+        let match :Match | null;
+
         if (data && typeof data === "object") {
             // console.log("                               get-match-data", data && typeof data["match_id"]);
             if (typeof data["match_id"] === "number") {
-                socket.send(JSON.stringify(getMatchData(data["match_id"])));
+                match = getMatchById(data["match_id"]);
+                setInterval(async () =>{ 
+                    if (match)
+                    await matchLoopView(match.match_id, socket)
+                }, 17)   
+                
             }
             else {
                 socket.send(JSON.stringify({success: false, message: "Missing match_id"}));
@@ -52,6 +60,45 @@ export function registerGameListeners(_app: FastifyInstance): void {
             socket.send(JSON.stringify({success: false, message: "Invalid data format"}));
         }
     })
+
+    function matchLoopView(match_id: number, socket: WebSocket) : Promise<void>
+    {
+        return new Promise((resolve, _reject) =>{
+            socket.send(JSON.stringify(getMatchData(match_id)))
+            resolve();
+        })
+    }
+
+
+    eventEmitter.on("ws-message:get-ia-needs-data", (data: any, socket: WebSocket) => {
+        let match :Match | null;
+
+        if (data && typeof data === "object") {
+            // console.log("                               get-match-data", data && typeof data["match_id"]);
+            if (typeof data["match_id"] === "number") {
+                match = getMatchById(data["match_id"]);
+                setInterval(async () =>{ 
+                    if (match)
+                    await SendAiNeedsView(match.match_id, socket)
+                }, 17)   
+                
+            }
+            else {
+                socket.send(JSON.stringify({success: false, message: "Missing match_id"}));
+            }
+        }
+        else {
+            socket.send(JSON.stringify({success: false, message: "Invalid data format"}));
+        }
+    })
+
+    function SendAiNeedsView(match_id: number, socket: WebSocket) : Promise<void>
+    {
+        return new Promise((resolve, _reject) =>{
+            socket.send(JSON.stringify(getAiNeeds(match_id)))
+            resolve();
+        })
+    }
 
     eventEmitter.on("ws-message:toggle-pause-match", (data: any, socket: WebSocket) => {
         if (data && typeof data === "object") {

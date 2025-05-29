@@ -1,6 +1,6 @@
 import {IBasicResponse} from "../interfaces/response.interface";
 import MatchManager from "../managers/match.manager";
-import Match from "../classes/Match";
+import Match, { AiNeeds } from "../classes/Match";
 
 
 export function playerJoinMatch(playerName: string, Player_id: number, match_id: number, AI: boolean = false): IBasicResponse {
@@ -19,7 +19,20 @@ export function getMatchData(match_id: number): IBasicResponse {
     if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
     
     // console.log("Match data retrieved for match_id:", match_id, "INFO", match.ExportMatchInfo());
-    return {success: true, message: "Match found", data: match.ExportMatchInfo()} as IBasicResponse;
+    return {success: true, message: "Match found", data: match.exportRenderInfo()} as IBasicResponse;
+}
+export function getAiNeeds(match_id: number):  AiNeeds | null {
+    const match = MatchManager.getInstance().getMatchById(match_id);
+    if (!match) return null
+    
+    // console.log("Match data retrieved for match_id:", match_id, "INFO", match.ExportMatchInfo());
+    return match.exportAiNeeds();
+}
+
+export function getMatchById(match_id: number) :Match|null{
+    const match = MatchManager.getInstance().getMatchById(match_id);
+    if (!match) return null
+    return match
 }
 
 // export function getBallData(match_id: number): IBasicResponse {

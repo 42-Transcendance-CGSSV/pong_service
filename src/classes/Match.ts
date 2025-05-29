@@ -4,6 +4,16 @@ import Player from "./Player";
 import {env} from "../utils/environment";
 import MatchExportInterface from "../interfaces/match.export.interface";
 
+export interface AiNeeds {
+    playerID: number ,
+    myScore: number,
+    ballX: number,
+    ballY: number,
+    ballSpeedY: number,
+    myPosition: number,
+    PaddleHeight: number,
+    mySide: number
+}
 class Match implements matchInterface {
     public isRunning: boolean = false;
     public readonly match_id: number = 0;
@@ -92,6 +102,38 @@ class Match implements matchInterface {
             endedAt: this.endedAt,
             winner_id: this.winner_id
         };
+    }
+    public exportRenderInfo()
+    {
+        return {
+            ball: { relativeBallX: this.ball.ExportBallInfo().relativeBallX , relativeBallY: this.ball.ExportBallInfo().relativeBallY},
+            players: this.players.map(player => player.ExportRenderInfo())
+        }
+    }
+    // playerID: string ,
+    // myScore: number,
+    // ballX: number,
+    // ballY: number,
+    // ballSpeedY: number,
+    // myPosition: number,
+    // PaddleHeight: number,
+    // mySide: number
+
+    public exportAiNeeds() : AiNeeds | null{
+        const player:Player|undefined = this.players.find(Player => Player.AI === true) 
+
+        if (player === undefined)
+            return null;
+        return({
+            playerID:  player.Player_id,
+            myScore: player.score,
+            ballX: this.ball.ExportBallInfo().relativeBallX,
+            ballY: this.ball.ExportBallInfo().relativeBallY,
+            ballSpeedY: 3,
+            myPosition: player.ExportRenderInfo().relativeY,
+            PaddleHeight: 80,
+            mySide: player.side === "left"?0:1
+        })
     }
 }
 

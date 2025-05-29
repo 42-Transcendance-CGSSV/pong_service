@@ -20,7 +20,7 @@ class Player implements PlayerInterface {
 
     constructor(PlayerName: string, Player_id: number, currentmatch_id: number, side: "left" | "right", AI?: boolean) {
         this.currentmatch_id = currentmatch_id;
-        this.Player_id = Player_id;  //TODO: Replace with number
+        this.Player_id = Player_id;
         this.side = side;
         this.PlayerName = PlayerName;
         this.PaddlePos = env.CANVAS_HEIGHT / 2 - env.PLAYER_PADDLE_HEIGHT / 2;
@@ -45,7 +45,7 @@ class Player implements PlayerInterface {
     }
 
     public getID() {
-        return this.Player_id;
+        return this.Player_id? this.Player_id:-1;
     }
 
     public getPos() {
@@ -62,6 +62,9 @@ class Player implements PlayerInterface {
 
     public ExportPlayerInfo() {
         return {...this, relativeY: normalizePosition(this.PaddlePos + env.PLAYER_PADDLE_HEIGHT / 2, env.CANVAS_HEIGHT, 0)};
+    }
+    public ExportRenderInfo() {
+        return {Player_id:this.getID(), relativeY: normalizePosition(this.PaddlePos + env.PLAYER_PADDLE_HEIGHT / 2, env.CANVAS_HEIGHT, 0), side:this.getSide()}
     }
 
 }

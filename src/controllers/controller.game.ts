@@ -73,23 +73,17 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
         handler: async (request: FastifyRequest, reply: FastifyReply) => {
             if (!request.body)
                 return reply.status(400).send({success: false, message: "No match_id provided"} as IBasicResponse); //TODO replace with APiError
-            console.log("HEEERE")
             const body = request.body as IInitPlayers;
-            console.log("HEEERE 2")
-            console.log("deebug ",body.player_1.user_id, body.player_2.user_id)
             if (MatchManager.getInstance().getMatchByPlayer_id(body.player_1.user_id )) throw new Error("Player1 already in a match");
-            console.log("HEEERE 2.5")
             if (MatchManager.getInstance().getMatchByPlayer_id(body.player_2.user_id)) throw new Error("Player2 already in a match");
 
 
             const match = MatchManager.getInstance().getMatchById(body.match_id);
-            console.log("HEEERE 3")
             if (!match) {
                 throw Error("Match not found here"); //TODO: replace with APiError
             }
             match.addPlayer(body.player_1.player_name, body.player_1.user_id, body.player_1.is_ai)
             match.addPlayer(body.player_2.player_name, body.player_2.user_id, body.player_2.is_ai);
-            console.log("HEEERE 4")
             reply.send({
                 success: true,
                 message: "The match has been created",
