@@ -21,7 +21,7 @@ export function getMatchData(match_id: number): IBasicResponse {
     // console.log("Match data retrieved for match_id:", match_id, "INFO", match.ExportMatchInfo());
     return {success: true, message: "Match found", data: match.exportRenderInfo()} as IBasicResponse;
 }
-export function getAiNeeds(match_id: number):  AiNeeds | null {
+export function getAiNeeds(match_id: number):  AiNeeds[] | null {
     const match = MatchManager.getInstance().getMatchById(match_id);
     if (!match) return null
     

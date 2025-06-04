@@ -7,7 +7,7 @@ curl -X PUT http://localhost:3000/api/match/create
 curl -X PUT http://localhost:3000/api/match/init-players \
   -H "Content-Type: application/json" \
   -d '{
-    "match_id": 0,
+    "match_id": 555,
     "player_1": {
       "player_name": "Alice",
       "user_id": 123,

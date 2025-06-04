@@ -45,8 +45,8 @@ export function registerGameListeners(_app: FastifyInstance): void {
         if (data && typeof data === "object") {
             // console.log("                               get-match-data", data && typeof data["match_id"]);
             if (typeof data["match_id"] === "number") {
-                match = getMatchById(data["match_id"]);
                 setInterval(async () =>{ 
+                    match = getMatchById(data["match_id"]);
                     if (match)
                     await matchLoopView(match.match_id, socket)
                 }, 17)   
@@ -69,22 +69,33 @@ export function registerGameListeners(_app: FastifyInstance): void {
         })
     }
 
-
+    let time_between_updates = Date.now();
+    const intervalManager: Map<number, WebSocket> = new Map();
     eventEmitter.on("ws-message:get-ia-needs-data", (data: any, socket: WebSocket) => {
         let match :Match | null;
 
-        if (data && typeof data === "object") {
-            // console.log("                               get-match-data", data && typeof data["match_id"]);
-            if (typeof data["match_id"] === "number") {
-                match = getMatchById(data["match_id"]);
+        if (data && typeof data === "object" ) {
+            if (typeof data["connection_id"] !== "number")
+            {
+                return socket.send(JSON.stringify({success: false, message: "Missing connection_id"}));
+            }
+            if (!intervalManager.has(data["connection_id"]))
+                intervalManager.set(data["connection_id"], socket);
+            if (typeof data["match_id"] === "number" && !intervalManager.has(data["match_id"])) {
                 setInterval(async () =>{ 
-                    if (match)
-                    await SendAiNeedsView(match.match_id, socket)
-                }, 17)   
+                    match = getMatchById(data["match_id"]);
+                    if (match && match.isRunning){
+                        // console.log("SendAiNeedsView BEFORE:  ", Date.now())
+                        await SendAiNeedsView(match.match_id, intervalManager.get(data["connection_id"]) as WebSocket)
+                    }
+                }, 30)
                 
             }
-            else {
+            else if (typeof data["match_id"] != "number"){
                 socket.send(JSON.stringify({success: false, message: "Missing match_id"}));
+            }
+            else if (intervalManager.has(data["match_id"])) {
+                socket.send(JSON.stringify({success: false, message: "Already listening to this match"}));
             }
         }
         else {
@@ -94,8 +105,11 @@ export function registerGameListeners(_app: FastifyInstance): void {
 
     function SendAiNeedsView(match_id: number, socket: WebSocket) : Promise<void>
     {
+        // console.log("SendAiNeedsView", match_id)
         return new Promise((resolve, _reject) =>{
+            console.log("time between updates: ", Date.now() - time_between_updates)
             socket.send(JSON.stringify(getAiNeeds(match_id)))
+            time_between_updates = Date.now();
             resolve();
         })
     }

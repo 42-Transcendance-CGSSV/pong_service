@@ -66,6 +66,7 @@ class Player implements PlayerInterface {
     public ExportRenderInfo() {
         return {Player_id:this.getID(), relativeY: normalizePosition(this.PaddlePos + env.PLAYER_PADDLE_HEIGHT / 2, env.CANVAS_HEIGHT, 0), side:this.getSide()}
     }
+    
 
 }
 

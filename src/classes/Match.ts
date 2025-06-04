@@ -16,7 +16,7 @@ export interface AiNeeds {
 }
 class Match implements matchInterface {
     public isRunning: boolean = false;
-    public readonly match_id: number = 0;
+    public readonly match_id: number = 555;
     public readonly ball: Ball;
     public players: Player[] = [];
     public readonly scoreGoal: number;
@@ -33,7 +33,7 @@ class Match implements matchInterface {
         this.endedAt = -1;
         this.winner_id = -1;
 
-        this.match_id = this.match_id++; // TODO: Replace with a proper ID generator
+        // this.match_id = this.match_id++; // TODO: Replace with a proper ID generator
     }
 
     public resetMatch(): void {
@@ -119,21 +119,36 @@ class Match implements matchInterface {
     // PaddleHeight: number,
     // mySide: number
 
-    public exportAiNeeds() : AiNeeds | null{
-        const player:Player|undefined = this.players.find(Player => Player.AI === true) 
+    public exportAiNeeds() : AiNeeds[] | null{
+        const player:Player[]|undefined = this.players.filter(Player => Player.AI === true)
 
-        if (player === undefined)
-            return null;
-        return({
-            playerID:  player.Player_id,
-            myScore: player.score,
-            ballX: this.ball.ExportBallInfo().relativeBallX,
-            ballY: this.ball.ExportBallInfo().relativeBallY,
-            ballSpeedY: 3,
-            myPosition: player.ExportRenderInfo().relativeY,
-            PaddleHeight: 80,
-            mySide: player.side === "left"?0:1
-        })
+        let ret : AiNeeds[] | null = null;
+        if (player.length > 0)
+        {
+            ret = player.map ((player: Player) => ({
+                playerID:  player.Player_id,
+                myScore: player.score,
+                ballX: this.ball.ExportBallInfo().relativeBallX,
+                ballY: this.ball.ExportBallInfo().relativeBallY,
+                ballSpeedY: 3,
+                myPosition: player.ExportRenderInfo().relativeY,
+                PaddleHeight: 80,
+                mySide: player.side === "left"?0:1
+            }))
+        }
+
+        // if (player === undefined)
+        return ret;
+        // return({
+        //     playerID:  player.Player_id,
+        //     myScore: player.score,
+        //     ballX: this.ball.ExportBallInfo().relativeBallX,
+        //     ballY: this.ball.ExportBallInfo().relativeBallY,
+        //     ballSpeedY: 3,
+        //     myPosition: player.ExportRenderInfo().relativeY,
+        //     PaddleHeight: 80,
+        //     mySide: player.side === "left"?0:1
+        // })
     }
 }
 
