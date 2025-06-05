@@ -2,14 +2,25 @@ import {eventEmitter} from "../app";
 import {FastifyInstance} from "fastify";
 import { getAiNeeds, getMatchById, getMatchData, getPlayerData,  movePaddle, togglePauseMatch} from "../services/match.service";
 import Match from "../classes/Match";
+import { clearInterval } from "timers";
 
 export function registerGameListeners(_app: FastifyInstance): void {
-
+    let last_direction: string | null = null;
+    let action_calls = 0;
     eventEmitter.on("ws-message:move-paddle", (data: any, socket: WebSocket) => {
-        console.log("                               move-paddle", data["user_id"], data["direction"]);
         if (data && typeof data === "object") {
             if (typeof data["user_id"] === "number") {
                 if (data["direction"] && (data["direction"] === "up" || data["direction"] === "down")) {
+                    if (data["user_id"] === 123){
+                        if (last_direction === data["direction"]) {
+                            action_calls++;
+                        }
+                        else {
+                            // console.log("                               move-paddle", data["user_id"], data["direction"], action_calls, "times");
+                            action_calls = 0;
+                        }
+                        last_direction = data["direction"];
+                    }
                     socket.send(JSON.stringify(movePaddle(data["user_id"], data["direction"])));
                 }
                 else {
@@ -70,26 +81,25 @@ export function registerGameListeners(_app: FastifyInstance): void {
     }
 
     let time_between_updates = Date.now();
-    const intervalManager: Map<number, WebSocket> = new Map();
+    let last_ping:number = 0;
+    const intervalManager: Map<number, NodeJS.Timeout> = new Map();
     eventEmitter.on("ws-message:get-ia-needs-data", (data: any, socket: WebSocket) => {
         let match :Match | null;
 
         if (data && typeof data === "object" ) {
-            if (typeof data["connection_id"] !== "number")
-            {
-                return socket.send(JSON.stringify({success: false, message: "Missing connection_id"}));
-            }
-            if (!intervalManager.has(data["connection_id"]))
-                intervalManager.set(data["connection_id"], socket);
-            if (typeof data["match_id"] === "number" && !intervalManager.has(data["match_id"])) {
-                setInterval(async () =>{ 
+            if (typeof data["match_id"] === "number" ) {
+                if (intervalManager.has(data["match_id"])) {
+                    clearInterval(intervalManager.get(data["match_id"])!);
+                    intervalManager.delete(data["match_id"]);
+                    console.log("Cleared interval for match_id:", data["match_id"]);
+                }
+                const interval = setInterval(async () =>{
+                    intervalManager.set(data["match_id"], interval);
                     match = getMatchById(data["match_id"]);
                     if (match && match.isRunning){
-                        // console.log("SendAiNeedsView BEFORE:  ", Date.now())
-                        await SendAiNeedsView(match.match_id, intervalManager.get(data["connection_id"]) as WebSocket)
+                        await SendAiNeedsView(match.match_id, socket)
                     }
-                }, 30)
-                
+                }, 17)
             }
             else if (typeof data["match_id"] != "number"){
                 socket.send(JSON.stringify({success: false, message: "Missing match_id"}));
@@ -107,7 +117,11 @@ export function registerGameListeners(_app: FastifyInstance): void {
     {
         // console.log("SendAiNeedsView", match_id)
         return new Promise((resolve, _reject) =>{
-            console.log("time between updates: ", Date.now() - time_between_updates)
+            const ping:number = Date.now() - time_between_updates;
+            if (ping !== last_ping && ping !== last_ping + 1 && ping !== last_ping - 1) {
+                // console.log("time between updates: ", ping)
+                last_ping = ping;
+            }
             socket.send(JSON.stringify(getAiNeeds(match_id)))
             time_between_updates = Date.now();
             resolve();

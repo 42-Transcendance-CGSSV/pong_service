@@ -16,6 +16,6 @@ curl -X PUT http://localhost:3000/api/match/init-players \
     "player_2": {
       "player_name": "Bob",
       "user_id": 456,
-      "is_ai": false
+      "is_ai": true
     }
   }'

@@ -49,7 +49,7 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
 
     fastify.put(process.env.BASE_ROUTE + "/match/create", {
         handler: async (_request: FastifyRequest, reply: FastifyReply) => {
-            const match = MatchManager.getInstance().createMatch(11);
+            const match = MatchManager.getInstance().createMatch(50000);
             reply.send({success: true, message: "The match has been created", data: match} as IBasicResponse);
         }
     });

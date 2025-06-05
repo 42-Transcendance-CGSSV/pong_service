@@ -9,7 +9,7 @@ export interface AiNeeds {
     myScore: number,
     ballX: number,
     ballY: number,
-    ballSpeedY: number,
+    ballSpeedX: number,
     myPosition: number,
     PaddleHeight: number,
     mySide: number
@@ -130,7 +130,8 @@ class Match implements matchInterface {
                 myScore: player.score,
                 ballX: this.ball.ExportBallInfo().relativeBallX,
                 ballY: this.ball.ExportBallInfo().relativeBallY,
-                ballSpeedY: 3,
+                ballSpeedX: this.ball.ExportBallInfo().ballSpeedX,
+
                 myPosition: player.ExportRenderInfo().relativeY,
                 PaddleHeight: 80,
                 mySide: player.side === "left"?0:1

@@ -35,8 +35,8 @@ class Ball implements BallInterface {
         if (this.ballX < 0 || this.ballX > env.CANVAS_WIDTH) {
             this.ballX = env.CANVAS_WIDTH / 2;
             this.ballY = env.CANVAS_HEIGHT / 2;
-            this.ballVelocityX = 3;
-            this.ballVelocityY = 3;
+            this.ballVelocityX = 40;
+            this.ballVelocityY = 40;
             this.ballVelocityX = -this.ballVelocityX;
             this.ballVelocityY = Math.floor(Math.random() * 10) - 5;
             if (this.lastToHit) {
@@ -55,30 +55,33 @@ class Ball implements BallInterface {
             if (!player) {
                 continue;
             }
-            if (
+            if (player !== this.lastToHit &&
                 player.getSide() === "left" &&
                 this.ballX - this.ballRadius < player.getPaddleWidth() &&
                 this.ballY > player.getPos() &&
                 this.ballY < player.getPos() + player.getPaddleHeight()) {
 
+                this.ballVelocityX -= 2;
                 this.ballVelocityX = -this.ballVelocityX;
-                this.ballVelocityX += 2;
-                this.ballVelocityY += Math.floor(Math.random() * 10) + 2;   
+                this.ballVelocityY +=  2;
+                // this.ballVelocityY = this.ballVelocityY > 0 ? this.ballVelocityY : -this.ballVelocityY;
                 this.lastToHit = player;
+                // console.log("left",this.ballVelocityX, this.ballVelocityY);
                 break;
             }
-            if (
+            if (player !== this.lastToHit &&
                 player.getSide() === "right" &&
                 this.ballX + this.ballRadius > env.CANVAS_WIDTH - player.getPaddleWidth() &&
                 this.ballY > player.getPos() &&
                 this.ballY < player.getPos() + player.getPaddleHeight()) {
                 // console.log(this.ballRadius);
                 // console.log("hereeee");
-                this.ballVelocityX = -this.ballVelocityX;
                 this.ballVelocityX += 2;
-                this.ballVelocityY += Math.floor(Math.random() * 10) + 2;
-                // console.log(this.ballVelocityX , this.ballVelocityY);
+                this.ballVelocityX = -this.ballVelocityX;
+                this.ballVelocityY += 2;
+                // this.ballVelocityY = this.ballVelocityY > 0 ? this.ballVelocityY : -this.ballVelocityY;
                 this.lastToHit = player;
+                // console.log("right ",this.ballVelocityX, this.ballVelocityY);
                 break;
             }
         }
@@ -88,7 +91,9 @@ class Ball implements BallInterface {
         return {
             ballRadius: this.ballRadius,
             relativeBallX: normalizePosition(this.ballX, env.CANVAS_WIDTH, 0),
-            relativeBallY: normalizePosition(this.ballY, env.CANVAS_HEIGHT, 0)
+            relativeBallY: normalizePosition(this.ballY, env.CANVAS_HEIGHT, 0),
+            ballSpeedY: this.ballVelocityY,
+            ballSpeedX: this.ballVelocityX,
         };
     }
 }
