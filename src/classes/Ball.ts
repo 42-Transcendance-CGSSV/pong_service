@@ -31,12 +31,21 @@ class Ball implements BallInterface {
         }
     }
 
+    private raiseBallSpeed(target: number, sign: "-" | "+"): number {
+        const tmp = target < 0 ? -target : target;
+        if (tmp >= 20) {
+            return target;
+        } else {
+            sign === "-" ? target -= 1 : target+= 1;
+        }
+        return target;
+    }
     public checkCollision(): void {
         if (this.ballX < 0 || this.ballX > env.CANVAS_WIDTH) {
             this.ballX = env.CANVAS_WIDTH / 2;
             this.ballY = env.CANVAS_HEIGHT / 2;
-            this.ballVelocityX = 40;
-            this.ballVelocityY = 40;
+            this.ballVelocityX = 4;
+            this.ballVelocityY = 4;
             this.ballVelocityX = -this.ballVelocityX;
             this.ballVelocityY = Math.floor(Math.random() * 10) - 5;
             if (this.lastToHit) {
@@ -61,12 +70,12 @@ class Ball implements BallInterface {
                 this.ballY > player.getPos() &&
                 this.ballY < player.getPos() + player.getPaddleHeight()) {
 
-                this.ballVelocityX -= 2;
+                this.ballVelocityX = this.raiseBallSpeed(this.ballVelocityX, "-") ;
                 this.ballVelocityX = -this.ballVelocityX;
-                this.ballVelocityY +=  2;
+                this.ballVelocityY = this.raiseBallSpeed(this.ballVelocityY, "+") ;
                 // this.ballVelocityY = this.ballVelocityY > 0 ? this.ballVelocityY : -this.ballVelocityY;
                 this.lastToHit = player;
-                // console.log("left",this.ballVelocityX, this.ballVelocityY);
+                console.log("left",this.ballVelocityX, this.ballVelocityY);
                 break;
             }
             if (player !== this.lastToHit &&
@@ -76,16 +85,17 @@ class Ball implements BallInterface {
                 this.ballY < player.getPos() + player.getPaddleHeight()) {
                 // console.log(this.ballRadius);
                 // console.log("hereeee");
-                this.ballVelocityX += 2;
+                this.raiseBallSpeed(this.ballVelocityX, "+");
                 this.ballVelocityX = -this.ballVelocityX;
-                this.ballVelocityY += 2;
+                this.raiseBallSpeed(this.ballVelocityY, "+") ;
                 // this.ballVelocityY = this.ballVelocityY > 0 ? this.ballVelocityY : -this.ballVelocityY;
                 this.lastToHit = player;
-                // console.log("right ",this.ballVelocityX, this.ballVelocityY);
+                console.log("right ",this.ballVelocityX, this.ballVelocityY);
                 break;
             }
         }
     }
+
 
     public ExportBallInfo() {
         return {

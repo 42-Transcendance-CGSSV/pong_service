@@ -8,6 +8,7 @@ interface PlayerInterface {
     score   : number;
     playerColor     : string;
     AI              : boolean;
+    isTraining      : boolean;
 }
 
 export default PlayerInterface;

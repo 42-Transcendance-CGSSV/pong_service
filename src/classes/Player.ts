@@ -5,7 +5,8 @@ import {normalizePosition} from "../utils/maths";
 
 
 class Player implements PlayerInterface {
-    public AI: boolean = true;
+    public readonly AI: boolean = true;
+    public readonly isTraining: boolean = false;
     public PaddlePos: number;
     public moveSpeed: number;
     public readonly PaddleWidth: number;
@@ -18,7 +19,7 @@ class Player implements PlayerInterface {
     public readonly playerColor: string = getRandomColor();
     public ready: boolean = false;
 
-    constructor(PlayerName: string, Player_id: number, currentmatch_id: number, side: "left" | "right", AI?: boolean) {
+    constructor(PlayerName: string, Player_id: number, currentmatch_id: number, side: "left" | "right", AI: boolean, isTraining: boolean) {
         this.currentmatch_id = currentmatch_id;
         this.Player_id = Player_id;
         this.side = side;
@@ -27,7 +28,8 @@ class Player implements PlayerInterface {
         this.PaddleHeight = env.PLAYER_PADDLE_HEIGHT;
         this.PaddleWidth = env.PADDLE_WIDTH;
         this.moveSpeed = 12;
-        this.AI = AI ?? true;
+        this.AI = AI;
+        this.isTraining = isTraining;
     }
 
     public moveUp() {
@@ -64,7 +66,7 @@ class Player implements PlayerInterface {
         return {...this, relativeY: normalizePosition(this.PaddlePos + env.PLAYER_PADDLE_HEIGHT / 2, env.CANVAS_HEIGHT, 0)};
     }
     public ExportRenderInfo() {
-        return {Player_id:this.getID(), relativeY: normalizePosition(this.PaddlePos + env.PLAYER_PADDLE_HEIGHT / 2, env.CANVAS_HEIGHT, 0), side:this.getSide()}
+        return {Player_id:this.getID(), relativeY: normalizePosition(this.PaddlePos + env.PLAYER_PADDLE_HEIGHT / 2, env.CANVAS_HEIGHT, 0), side:this.getSide(), isTraining: this.isTraining}
     }
     
 

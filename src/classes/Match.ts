@@ -11,8 +11,8 @@ export interface AiNeeds {
     ballY: number,
     ballSpeedX: number,
     myPosition: number,
-    PaddleHeight: number,
-    mySide: number
+    mySide: number,
+    isTraining: boolean
 }
 class Match implements matchInterface {
     public isRunning: boolean = false;
@@ -60,12 +60,12 @@ class Match implements matchInterface {
         }
     }
 
-    public addPlayer(PlayerName: string, Player_id: number, AI?: boolean): void {
+    public addPlayer(PlayerName: string, Player_id: number, AI: boolean, isTraining: boolean): void {
         let side: "right" | "left" = "left";
         if (this.players && this.players[0]) {
             side = this.players[0].getSide() === "left" ? "right" : "left";
         }
-        let player = new Player(PlayerName, Player_id, this.match_id, side, AI);
+        let player = new Player(PlayerName, Player_id, this.match_id, side, AI, isTraining);
         this.players.push(player);
     }
 
@@ -133,12 +133,13 @@ class Match implements matchInterface {
                 ballSpeedX: this.ball.ExportBallInfo().ballSpeedX,
 
                 myPosition: player.ExportRenderInfo().relativeY,
-                PaddleHeight: 80,
-                mySide: player.side === "left"?0:1
+                mySide: player.side === "left"?0:1,
+                isTraining: player.isTraining
             }))
         }
 
         // if (player === undefined)
+        // console.log ("export ai needs :", ret)
         return ret;
         // return({
         //     playerID:  player.Player_id,

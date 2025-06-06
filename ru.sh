@@ -10,12 +10,14 @@ curl -X PUT http://localhost:3000/api/match/init-players \
     "match_id": 555,
     "player_1": {
       "player_name": "Alice",
-      "user_id": 123,
-      "is_ai": true
+      "user_id": 7,
+      "is_ai": true,
+      "isTraining": true
     },
     "player_2": {
       "player_name": "Bob",
-      "user_id": 456,
-      "is_ai": true
+      "user_id": 42,
+      "is_ai": false,
+      "isTraining": false
     }
   }'

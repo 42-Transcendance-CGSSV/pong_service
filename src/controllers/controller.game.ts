@@ -60,11 +60,13 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
             player_name: string;
             user_id: number;
             is_ai: boolean;
+            isTraining: boolean;
         },
         player_2: {
             player_name: string;
             user_id: number;
             is_ai: boolean;
+            isTraining: boolean;
         }
     }
 
@@ -82,8 +84,8 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
             if (!match) {
                 throw Error("Match not found here"); //TODO: replace with APiError
             }
-            match.addPlayer(body.player_1.player_name, body.player_1.user_id, body.player_1.is_ai)
-            match.addPlayer(body.player_2.player_name, body.player_2.user_id, body.player_2.is_ai);
+            match.addPlayer(body.player_1.player_name, body.player_1.user_id, body.player_1.is_ai, body.player_1.isTraining);
+            match.addPlayer(body.player_2.player_name, body.player_2.user_id, body.player_2.is_ai, body.player_2.isTraining);
             reply.send({
                 success: true,
                 message: "The match has been created",

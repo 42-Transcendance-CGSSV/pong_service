@@ -122,7 +122,11 @@ export function registerGameListeners(_app: FastifyInstance): void {
                 // console.log("time between updates: ", ping)
                 last_ping = ping;
             }
-            socket.send(JSON.stringify(getAiNeeds(match_id)))
+            const payload = JSON.stringify(getAiNeeds(match_id))
+            if (!payload)
+                return resolve();
+            // console.log("payload", payload)
+            socket.send(payload)
             time_between_updates = Date.now();
             resolve();
         })
