@@ -10,6 +10,7 @@ import {env} from "./utils/environment";
 import {registerGameListeners} from "./listeners/game.listeners";
 import {Engine} from "./pongEngine";
 import {registerSocketCoreListeners} from "./listeners/core.listeners";
+// import { matchmaking } from "./classes/Matchmaking";
 
 const app = fastify({logger: true, ajv: {customOptions: {removeAdditional: "all"}}});
 export const eventEmitter = new EventEmitter();
@@ -18,6 +19,7 @@ dotenv.config();
 
 function start(): void {
     try {
+        // matchmaking
         Engine.startGameLoop();
 
         app.register(websockets);

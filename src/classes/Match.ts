@@ -16,7 +16,7 @@ export interface AiNeeds {
 }
 class Match implements matchInterface {
     public isRunning: boolean = false;
-    public readonly match_id: number = 555;
+    public readonly match_id: number;
     public readonly ball: Ball;
     public players: Player[] = [];
     public readonly scoreGoal: number;
@@ -26,7 +26,8 @@ class Match implements matchInterface {
     public winner_id: number = -1;
 
 
-    public constructor(scoreGoal: number) {
+    public constructor(scoreGoal: number, match_id: number) {
+        this.match_id = match_id;
         this.ball = new Ball(10, 3, 3);
         this.scoreGoal = scoreGoal;
         this.startedAt = -1;
@@ -60,13 +61,12 @@ class Match implements matchInterface {
         }
     }
 
-    public addPlayer(PlayerName: string, Player_id: number, AI: boolean, isTraining: boolean): void {
-        let side: "right" | "left" = "left";
-        if (this.players && this.players[0]) {
-            side = this.players[0].getSide() === "left" ? "right" : "left";
-        }
-        let player = new Player(PlayerName, Player_id, this.match_id, side, AI, isTraining);
-        this.players.push(player);
+    public addPlayer(Player: Player): void {
+        if (this.players.length == 1)
+            Player.side = "right";
+        else if (this.players.length == 0)
+            Player.side = "left";
+        this.players.push(Player);
     }
 
     public getPlayersInMatch(): Player[] {

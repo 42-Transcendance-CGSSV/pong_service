@@ -4,7 +4,7 @@ import {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
 import WsEvent from "../classes/WsEvent";
 import MatchManager from "../managers/match.manager";
 import {IBasicResponse} from "../interfaces/response.interface";
-import initPlayersSchemas from "../schemas/gen.player.schema";
+import initPlayerSchemas from "../schemas/gen.player.schema";
 import schemas from "fluent-json-schema";
 import {startMatch} from "../services/match.service";
 
@@ -47,49 +47,72 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
             });
     });
 
-    fastify.put(process.env.BASE_ROUTE + "/match/create", {
-        handler: async (_request: FastifyRequest, reply: FastifyReply) => {
-            const match = MatchManager.getInstance().createMatch(50000);
+    fastify.put(process.env.BASE_ROUTE + "/match/create", { // TODO: adapt
+        schema: {
+            body: schemas.object().prop("scoreGoal", schemas.number().minimum(1).required())
+                                  .prop("match_id", schemas.number().minimum(1).required())
+        },
+        handler: async (request: FastifyRequest, reply: FastifyReply) => {
+            const body = request.body as { scoreGoal: number; match_id: number };
+            const match = MatchManager.getInstance().createMatch(body.scoreGoal, body.match_id);
             reply.send({success: true, message: "The match has been created", data: match} as IBasicResponse);
         }
     });
+    fastify.get(process.env.BASE_ROUTE + "/players", {
+            handler: (_request: FastifyRequest, reply: FastifyReply) => {
+                // return all players in all matches
+                const players = MatchManager.getInstance().players;
+                reply.send({success: true, message: "Players ", data: players} as IBasicResponse);
+            }
+        }
+    );
+    fastify.get(process.env.BASE_ROUTE + "/matches", {
+            handler: (_request: FastifyRequest, reply: FastifyReply) => {
+                // return all matches
+                const matches = MatchManager.getInstance().matches;
+                reply.send({success: true, message: "Matches ", data: matches} as IBasicResponse);
+            }
+        }
+    );
 
     interface IInitPlayers {
-        match_id: number;
-        player_1: {
-            player_name: string;
-            user_id: number;
-            is_ai: boolean;
-            isTraining: boolean;
-        },
-        player_2: {
-            player_name: string;
-            user_id: number;
-            is_ai: boolean;
-            isTraining: boolean;
-        }
+        
+        player_name: string;
+        user_id: number;
+        is_ai: boolean;
+        isTraining: boolean;
+        
     }
 
-    fastify.put(process.env.BASE_ROUTE + "/match/init-players", {
-        schema: {body: initPlayersSchemas},
+    fastify.put(process.env.BASE_ROUTE + "/match/init-player", {
+        schema: {body: initPlayerSchemas},
         handler: async (request: FastifyRequest, reply: FastifyReply) => {
-            if (!request.body)
-                return reply.status(400).send({success: false, message: "No match_id provided"} as IBasicResponse); //TODO replace with APiError
-            const body = request.body as IInitPlayers;
-            if (MatchManager.getInstance().getMatchByPlayer_id(body.player_1.user_id )) throw new Error("Player1 already in a match");
-            if (MatchManager.getInstance().getMatchByPlayer_id(body.player_2.user_id)) throw new Error("Player2 already in a match");
+            const p = request.body as IInitPlayers;
+            if (MatchManager.getInstance().playerExists(p.user_id)) throw new Error(`${p.user_id} already exists`);
 
-
-            const match = MatchManager.getInstance().getMatchById(body.match_id);
-            if (!match) {
-                throw Error("Match not found here"); //TODO: replace with APiError
-            }
-            match.addPlayer(body.player_1.player_name, body.player_1.user_id, body.player_1.is_ai, body.player_1.isTraining);
-            match.addPlayer(body.player_2.player_name, body.player_2.user_id, body.player_2.is_ai, body.player_2.isTraining);
+            // MatchManager.getInstance().
+            MatchManager.getInstance().createPlayer(p.player_name, p.user_id, p.is_ai, p.isTraining);
             reply.send({
                 success: true,
-                message: "The match has been created",
-                data: match
+                message: "player initialized",
+                data: MatchManager.getInstance().players
+            } as IBasicResponse);
+        }
+    });
+
+    fastify.put(process.env.BASE_ROUTE + "/placeSeated", {
+        schema: {body: schemas.object().prop("user_id", schemas.number().minimum(0).required()).prop("match_id", schemas.number().minimum(0).required())},
+        handler: async (request: FastifyRequest, reply: FastifyReply) => {
+            const p = request.body as {user_id: number, match_id: number};
+            if (!MatchManager.getInstance().playerExists(p.user_id)) throw new Error(`Player ${p.user_id} does not exist`);
+            if (!MatchManager.getInstance().getMatchById(p.match_id)) throw new Error(`Match ${p.match_id} does not exist`);
+
+            // MatchManager.getInstance().
+            MatchManager.getInstance().seatPlayer(p.user_id, p.match_id);
+            reply.send({
+                success: true,
+                message: "player initialized",
+                data: MatchManager.getInstance().players
             } as IBasicResponse);
         }
     });
@@ -125,6 +148,8 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
             }
         }
     );
+
+    
 
 
     done();

@@ -2,16 +2,16 @@ import {IBasicResponse} from "../interfaces/response.interface";
 import MatchManager from "../managers/match.manager";
 import Match, { AiNeeds } from "../classes/Match";
 
+// TODO: remake
+// export function playerJoinMatch(playerName: string, Player_id: number, match_id: number, AI: boolean = false, isTraining: boolean = false): IBasicResponse {
+//     const match = MatchManager.getInstance().getMatchById(match_id)
 
-export function playerJoinMatch(playerName: string, Player_id: number, match_id: number, AI: boolean = false, isTraining: boolean = false): IBasicResponse {
-    const match = MatchManager.getInstance().getMatchById(match_id)
+//     if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
+//     if (match.isExpired()) return {success: false, message: "Match expired"} as IBasicResponse;
 
-    if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
-    if (match.isExpired()) return {success: false, message: "Match expired"} as IBasicResponse;
-
-    match.addPlayer(playerName, Player_id, AI, isTraining);
-    return {success: true, message: "Player joined the match"} as IBasicResponse;
-}
+//     match.addPlayer(playerName, Player_id, AI, isTraining);
+//     return {success: true, message: "Player joined the match"} as IBasicResponse;
+// }
 
 
 export function getMatchData(match_id: number): IBasicResponse {

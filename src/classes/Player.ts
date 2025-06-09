@@ -12,17 +12,15 @@ class Player implements PlayerInterface {
     public readonly PaddleWidth: number;
     public readonly PaddleHeight: number;
     public score: number = 0;
-    public currentmatch_id: number;
-    public readonly side: "right" | "left";
+    public currentmatch_id: number = -1;
+    public side: "right" | "left" = "left";
     public readonly Player_id: number;
     public readonly PlayerName: string;
     public readonly playerColor: string = getRandomColor();
     public ready: boolean = false;
 
-    constructor(PlayerName: string, Player_id: number, currentmatch_id: number, side: "left" | "right", AI: boolean, isTraining: boolean) {
-        this.currentmatch_id = currentmatch_id;
+    constructor(PlayerName: string, Player_id: number, AI: boolean, isTraining: boolean) {
         this.Player_id = Player_id;
-        this.side = side;
         this.PlayerName = PlayerName;
         this.PaddlePos = env.CANVAS_HEIGHT / 2 - env.PLAYER_PADDLE_HEIGHT / 2;
         this.PaddleHeight = env.PLAYER_PADDLE_HEIGHT;

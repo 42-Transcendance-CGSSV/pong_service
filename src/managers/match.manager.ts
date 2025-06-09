@@ -5,19 +5,56 @@ import Ball from "../classes/Ball";
 export default class MatchManager {
 
     public readonly matches: Match[] = [];
+    public          players: Player[] = [];
     private static instance: MatchManager | null = null;
     private matchCounter: number = 0;
 
-    public createMatch(scoreGoal: number): Match {
-        let match = new Match(scoreGoal);
+    public createMatch(scoreGoal: number, match_id:number ): Match {
+        let match = new Match(scoreGoal, match_id);
         this.matches.push(match);
         this.matchCounter++;
         return match;
+    }
+    public createPlayer(player_name: string, user_id: number, is_ai: boolean, isTraining: boolean): Player {
+        let player = new Player(player_name, user_id, is_ai, isTraining);
+        this.players.push(player);
+        return player;
+    }
+
+    public seatPlayer(player_id:number, match_id:number){
+        for (const match of this.matches) {
+            if (match.match_id === match_id) {
+                for (const player of this.players) {
+                    if (player.Player_id === player_id) {
+                        if (match.players.length < 2 && !match.isRunning) {
+                            match.addPlayer(player);
+                            return;
+                        } else {
+                            console.error("Match is already running or full");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    public playerExists(player_id: number): boolean {
+        for (const player of this.players) {
+            if (player.Player_id === player_id) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public removeMatch(match: Match): void {
         if (this.matches.includes(match)) {
             this.matches.splice(this.matches.indexOf(match), 1);
+        }
+    }
+    public removePlayer(player: Player): void {
+        if (this.players.includes(player)) {
+            this.players.splice(this.players.indexOf(player), 1);
         }
     }
 

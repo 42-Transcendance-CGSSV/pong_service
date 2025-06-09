@@ -56,10 +56,15 @@ export function registerGameListeners(_app: FastifyInstance): void {
         if (data && typeof data === "object") {
             // console.log("                               get-match-data", data && typeof data["match_id"]);
             if (typeof data["match_id"] === "number") {
+                if (!getMatchById(data["match_id"])) {
+                    socket.send(JSON.stringify({success: false, message: "Missing match is null"}));
+                    console.log(`Attempt to draw invalid match with id: ${data["match_id"]}`);
+                    return;
+                }
                 setInterval(async () =>{ 
                     match = getMatchById(data["match_id"]);
                     if (match)
-                    await matchLoopView(match.match_id, socket)
+                        await matchLoopView(match.match_id, socket)
                 }, 17)   
                 
             }
