@@ -104,5 +104,6 @@ export function movePaddle(Player_id: number, direction: "up" | "down"): IBasicR
     if (!player) return {success: false, message: "Unable to find the player in this match !"} as IBasicResponse;
 
     direction === "down" ? player.moveDown() : player.moveUp();
+    console.log(`Player ${player.PlayerName} moved paddle ${direction} in match ${match.match_id}`);
     return {success: true, message: "Paddle has been moved " + direction} as IBasicResponse;
 }

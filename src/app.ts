@@ -12,7 +12,7 @@ import {Engine} from "./pongEngine";
 import {registerSocketCoreListeners} from "./listeners/core.listeners";
 // import { matchmaking } from "./classes/Matchmaking";
 
-const app = fastify({logger: true, ajv: {customOptions: {removeAdditional: "all"}}});
+const app = fastify({logger: false, ajv: {customOptions: {removeAdditional: "all"}}});
 export const eventEmitter = new EventEmitter();
 
 dotenv.config();

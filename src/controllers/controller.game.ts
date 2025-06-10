@@ -70,6 +70,9 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
             handler: (_request: FastifyRequest, reply: FastifyReply) => {
                 // return all matches
                 const matches = MatchManager.getInstance().matches;
+                if (matches.length === 0) {
+                    reply.send({success: false, message: "No matches found"} as IBasicResponse);
+                }
                 reply.send({success: true, message: "Matches ", data: matches} as IBasicResponse);
             }
         }

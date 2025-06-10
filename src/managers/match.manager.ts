@@ -10,6 +10,12 @@ export default class MatchManager {
     private matchCounter: number = 0;
 
     public createMatch(scoreGoal: number, match_id:number ): Match {
+        for (const match of this.matches) {
+            if (match.match_id === match_id) {
+                console.error("Match with this ID already exists");
+                return match;
+            }
+        }
         let match = new Match(scoreGoal, match_id);
         this.matches.push(match);
         this.matchCounter++;

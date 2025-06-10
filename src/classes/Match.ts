@@ -62,10 +62,8 @@ class Match implements matchInterface {
     }
 
     public addPlayer(Player: Player): void {
-        if (this.players.length == 1)
-            Player.side = "right";
-        else if (this.players.length == 0)
-            Player.side = "left";
+        this.players.length === 1 ? Player.side = "right" : Player.side = "left";
+        Player.currentmatch_id = this.match_id;
         this.players.push(Player);
     }
 

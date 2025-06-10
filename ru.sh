@@ -1,12 +1,6 @@
 #!/bin/bash
 
-# Create a match
-curl -X PUT http://localhost:3000/api/match/create \
-  -H "Content-Type: application/json" \
-  -d '{
-    "scoreGoal": 5,
-    "match_id": 555
-  }'
+
 
 # Initialize players
 curl -X PUT http://localhost:3000/api/match/init-player \
@@ -39,8 +33,44 @@ curl -X PUT http://localhost:3000/api/match/init-player \
   curl -X PUT http://localhost:3000/api/match/init-player \
   -H "Content-Type: application/json" \
   -d '{
-      "player_name": "Diana",
-      "user_id": 101,
+      "player_name": "gabriel",
+      "user_id": 1014,
+      "is_ai": false,
+      "isTraining": false
+  }'
+
+    curl -X PUT http://localhost:3000/api/match/init-player \
+  -H "Content-Type: application/json" \
+  -d '{
+      "player_name": "yuri",
+      "user_id": 1042,
+      "is_ai": false,
+      "isTraining": false
+  }'
+
+      curl -X PUT http://localhost:3000/api/match/init-player \
+  -H "Content-Type: application/json" \
+  -d '{
+      "player_name": "yummy",
+      "user_id": 2042,
+      "is_ai": false,
+      "isTraining": false
+  }'
+
+      curl -X PUT http://localhost:3000/api/match/init-player \
+  -H "Content-Type: application/json" \
+  -d '{
+      "player_name": "marc",
+      "user_id": 2242,
+      "is_ai": false,
+      "isTraining": false
+  }'
+
+        curl -X PUT http://localhost:3000/api/match/init-player \
+  -H "Content-Type: application/json" \
+  -d '{
+      "player_name": "marcus",
+      "user_id": 2742,
       "is_ai": false,
       "isTraining": false
   }'
