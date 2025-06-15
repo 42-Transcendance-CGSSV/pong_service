@@ -20,6 +20,8 @@ class Ball implements BallInterface {
         this.ballRadius = ballRadius;
         this.ballVelocityX = ballVelocityX * env.TIME_MULTIPLIER;
         this.ballVelocityY = ballVelocityY * env.TIME_MULTIPLIER;
+        if (env.TIME_MULTIPLIER !== 1)
+            console.log("Ball: WARNING TIME MULTIPLIER SET TO ", env.TIME_MULTIPLIER)
     }
 
     public moveBall(): void {
@@ -44,8 +46,8 @@ class Ball implements BallInterface {
         if (this.ballX < 0 || this.ballX > env.CANVAS_WIDTH) {
             this.ballX = env.CANVAS_WIDTH / 2;
             this.ballY = env.CANVAS_HEIGHT / 2;
-            this.ballVelocityX = 4;
-            this.ballVelocityY = 4;
+            this.ballVelocityX = 4 *env.TIME_MULTIPLIER;
+            this.ballVelocityY = 4 *env.TIME_MULTIPLIER;
             this.ballVelocityX = -this.ballVelocityX;
             this.ballVelocityY = Math.floor(Math.random() * 10) - 5;
             if (this.lastToHit) {

@@ -25,9 +25,11 @@ class Player implements PlayerInterface {
         this.PaddlePos = env.CANVAS_HEIGHT / 2 - env.PLAYER_PADDLE_HEIGHT / 2;
         this.PaddleHeight = env.PLAYER_PADDLE_HEIGHT;
         this.PaddleWidth = env.PADDLE_WIDTH;
-        this.moveSpeed = 12;
+        this.moveSpeed = 12 * env.TIME_MULTIPLIER;
         this.AI = AI;
         this.isTraining = isTraining;
+        if (env.TIME_MULTIPLIER !== 1)
+            console.log("Player: WARNING TIME MULTIPLIER SET TO ", env.TIME_MULTIPLIER)
     }
 
     public moveUp() {

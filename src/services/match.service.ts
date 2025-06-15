@@ -1,6 +1,8 @@
 import {IBasicResponse} from "../interfaces/response.interface";
 import MatchManager from "../managers/match.manager";
-import Match, { AiNeeds } from "../classes/Match";
+import Match, {AiNeeds} from "../classes/Match";
+import {ApiError, ApiErrorCode} from "../utils/error.util";
+import Player from "../classes/Player";
 
 // TODO: remake
 // export function playerJoinMatch(playerName: string, Player_id: number, match_id: number, AI: boolean = false, isTraining: boolean = false): IBasicResponse {
@@ -16,7 +18,8 @@ import Match, { AiNeeds } from "../classes/Match";
 
 export function getMatchData(match_id: number): IBasicResponse {
     const match = MatchManager.getInstance().getMatchById(match_id);
-    if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
+    if (!match) throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "Unable to find the match")
+        // return {success: false, message: "Unable to find the match"} as IBasicResponse;
     
     // console.log("Match data retrieved for match_id:", match_id, "INFO", match.ExportMatchInfo());
     return {success: true, message: "Match found", data: match.exportRenderInfo()} as IBasicResponse;
@@ -46,19 +49,18 @@ export function getMatchById(match_id: number) :Match|null{
 export function getPlayerData(Player_id: number): IBasicResponse {
 
     const match = MatchManager.getInstance().getMatchByPlayer_id(Player_id);
-    if (!match) return {
-        success: false,
-        message: "Unable to find a match with this player inside !"
-    } as IBasicResponse;
+    if (!match) throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "Match does not exist")
+
     const player = match.getPlayerById(Player_id);
-    if (!player) return {success: false, message: "Unable to find the player in this match !"} as IBasicResponse;
+    if (!player) throw new ApiError(ApiErrorCode.USER_NOT_FOUND, "Player not found")
     return {success: true, message: "Player found", data: player.ExportPlayerInfo()} as IBasicResponse;
 }
 
 
 export function togglePauseMatch(match_id: number): IBasicResponse {
     const match = MatchManager.getInstance().getMatchById(match_id);
-    if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
+    if (!match) throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "match not found")
+        // return {success: false, message: "Unable to find the match"} as IBasicResponse;
 
 
     match.pausedAt = match.pausedAt === -1 ? Date.now() : -1;
@@ -82,7 +84,8 @@ export function startMatch(match: Match): IBasicResponse {
 
 export function endMatch(match_id: number): IBasicResponse {
     const match = MatchManager.getInstance().getMatchById(match_id);
-    if (!match) return {success: false, message: "Unable to find the match"} as IBasicResponse;
+    if (!match) throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "match not found")
+        // return {success: false, message: "Unable to find the match"} as IBasicResponse;
 
     match.startedAt = -1;
     match.isRunning = false;
@@ -98,10 +101,13 @@ export function endMatch(match_id: number): IBasicResponse {
 
 export function movePaddle(Player_id: number, direction: "up" | "down"): IBasicResponse {
     const match = MatchManager.getInstance().getMatchByPlayer_id(Player_id);
-    if (!match) return {success: false, message: "Unable to find a match with this player inside !"} as IBasicResponse;
-
-    const player = match.getPlayerById(Player_id);
-    if (!player) return {success: false, message: "Unable to find the player in this match !"} as IBasicResponse;
+    if (!match) throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "match not found")
+        // return {success: false, message: "Unable to find a match with this player inside !"} as IBasicResponse;
+    const player:Player|undefined = match.getPlayerById(Player_id);
+    if (!player) throw new ApiError(ApiErrorCode.USER_NOT_FOUND, "player not found")
+        // return {success: false, message: "Unable to find the player in this match !"} as IBasicResponse;
+    if (!match.isRunning) throw new ApiError(ApiErrorCode.INSUFFICIENT_PERMISSIONS, "Match is not running yet !")
+        // return {success: false, message: "Match is not running yet !"} as IBasicResponse;
 
     direction === "down" ? player.moveDown() : player.moveUp();
     console.log(`Player ${player.PlayerName} moved paddle ${direction} in match ${match.match_id}`);

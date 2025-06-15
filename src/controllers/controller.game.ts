@@ -7,6 +7,7 @@ import {IBasicResponse} from "../interfaces/response.interface";
 import initPlayerSchemas from "../schemas/gen.player.schema";
 import schemas from "fluent-json-schema";
 import {startMatch} from "../services/match.service";
+import {ApiError, ApiErrorCode} from "../utils/error.util";
 
 export function pongController(fastify: FastifyInstance, _options: any, done: () => void) {
 
@@ -71,7 +72,8 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
                 // return all matches
                 const matches = MatchManager.getInstance().matches;
                 if (matches.length === 0) {
-                    reply.send({success: false, message: "No matches found"} as IBasicResponse);
+                    // reply.send({success: false, message: "No matches found"} as IBasicResponse);
+                    throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "match not found")
                 }
                 reply.send({success: true, message: "Matches ", data: matches} as IBasicResponse);
             }
@@ -91,7 +93,7 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
         schema: {body: initPlayerSchemas},
         handler: async (request: FastifyRequest, reply: FastifyReply) => {
             const p = request.body as IInitPlayers;
-            if (MatchManager.getInstance().playerExists(p.user_id)) throw new Error(`${p.user_id} already exists`);
+            if (MatchManager.getInstance().playerExists(p.user_id)) throw new ApiError(ApiErrorCode.RESOURCE_ALREADY_EXISTS, `${p.user_id} already exists`)
 
             // MatchManager.getInstance().
             MatchManager.getInstance().createPlayer(p.player_name, p.user_id, p.is_ai, p.isTraining);
@@ -107,8 +109,8 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
         schema: {body: schemas.object().prop("user_id", schemas.number().minimum(0).required()).prop("match_id", schemas.number().minimum(0).required())},
         handler: async (request: FastifyRequest, reply: FastifyReply) => {
             const p = request.body as {user_id: number, match_id: number};
-            if (!MatchManager.getInstance().playerExists(p.user_id)) throw new Error(`Player ${p.user_id} does not exist`);
-            if (!MatchManager.getInstance().getMatchById(p.match_id)) throw new Error(`Match ${p.match_id} does not exist`);
+            if (!MatchManager.getInstance().playerExists(p.user_id)) throw new ApiError(ApiErrorCode.USER_NOT_FOUND, `Player ${p.user_id} does not exist`)
+            if (!MatchManager.getInstance().getMatchById(p.match_id)) throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, `Match ${p.match_id} does not exist`)
 
             // MatchManager.getInstance().
             MatchManager.getInstance().seatPlayer(p.user_id, p.match_id);
@@ -142,7 +144,8 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
                     throw new Error("Invalid request");
                 const match_id = request.params.match_id as number;
                 const match = MatchManager.getInstance().getMatchById(match_id);
-                if (!match) throw new Error("Match not found for this user");
+                if (!match) throw new ApiError(ApiErrorCode.MATCH_NOT_FOUND, "Match not found for this user");
+                    // throw new Error("Match not found for this user");
                 const isReady = match.getPlayersInMatch().every(p => p.ready);
                 if (isReady) {
                     startMatch(match);

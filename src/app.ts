@@ -1,5 +1,4 @@
 import fastify from "fastify";
-import dotenv from "dotenv";
 import websockets from '@fastify/websocket'
 import cors from "@fastify/cors";
 
@@ -10,12 +9,12 @@ import {env} from "./utils/environment";
 import {registerGameListeners} from "./listeners/game.listeners";
 import {Engine} from "./pongEngine";
 import {registerSocketCoreListeners} from "./listeners/core.listeners";
+import {ApiError} from "./utils/error.util";
+import {IBasicResponse} from "./interfaces/response.interface";
 // import { matchmaking } from "./classes/Matchmaking";
 
 const app = fastify({logger: false, ajv: {customOptions: {removeAdditional: "all"}}});
 export const eventEmitter = new EventEmitter();
-
-dotenv.config();
 
 function start(): void {
     try {
@@ -32,6 +31,25 @@ function start(): void {
             methods: ["GET", "POST", "PUT", "DELETE"],
             allowedHeaders: ["Content-Type", "Authorization"],
         });
+
+        app.setErrorHandler((error, _request, reply) => {
+            if (error.name === "ApiError") {
+                reply.code((error as ApiError).getHttpStatusCode()).send({
+                    success: false,
+                    errorCode: error.code,
+                    message: error.message
+                } as IBasicResponse);
+                return;
+            }
+
+            const statusCode = error.statusCode || 500;
+            reply.status(statusCode).send({
+                success: false,
+                message: error.message,
+                errorCode: error.code || "INTERNAL_SERVER_ERROR"
+            } as IBasicResponse);
+        });
+
         app.listen({port: Number(env.PORT)});
     } catch (error) {
         app.log.error(error);
