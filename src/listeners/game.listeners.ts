@@ -50,6 +50,7 @@ export function registerGameListeners(_app: FastifyInstance): void {
         }
     });
 
+    const matchIntervalManager: Map<number, NodeJS.Timeout> = new Map();
     eventEmitter.on("ws-message:get-match-data", (data: any, socket: WebSocket) => {
         let match :Match | null;
 
@@ -61,10 +62,19 @@ export function registerGameListeners(_app: FastifyInstance): void {
                     console.log(`Attempt to draw invalid match with id: ${data["match_id"]}`);
                     return;
                 }
-                setInterval(async () =>{ 
+                if (matchIntervalManager.has(data["match_id"])) {
+                    clearInterval(matchIntervalManager.get(data["match_id"])!);
+                    matchIntervalManager.delete(data["match_id"]);
+                }
+                const matchInterval = setInterval(async () =>{
+                    matchIntervalManager.set(data["match_id"], matchInterval);
                     match = getMatchById(data["match_id"]);
                     if (match)
                         await matchLoopView(match.match_id, socket)
+                    else {
+                        clearInterval(matchIntervalManager.get(data["match_id"])!);
+                        matchIntervalManager.delete(data["match_id"]);
+                    }
                 }, 17)   
                 
             }
@@ -104,7 +114,7 @@ export function registerGameListeners(_app: FastifyInstance): void {
                     if (match && match.isRunning){
                         await SendAiNeedsView(match.match_id, socket)
                     }
-                }, 17)
+                }, 1000)
             }
             else if (typeof data["match_id"] != "number"){
                 socket.send(JSON.stringify({success: false, message: "Missing match_id"}));
