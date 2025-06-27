@@ -11,8 +11,8 @@ export const env = {
     TIME_MULTIPLIER: Number(process.env.TIME_MULTIPLIER) || 1,
     PADDLE_WIDTH: Number(process.env.PADDLE_WITH) || 10,
     PADDLE_HEIGHT: Number(process.env.PADDLE_HEIGHT) || 80,
-    CANVAS_WIDTH: Number(process.env.CANVAS_WIDTH) || 800,
-    CANVAS_HEIGHT: Number(process.env.CANVAS_HEIGHT) || 600,
+    CANVAS_WIDTH: Number(process.env.CANVAS_WIDTH) || 13.33,
+    CANVAS_HEIGHT: Number(process.env.CANVAS_HEIGHT) || 10,
     UPDATE_INTERVAL_MS: Number(process.env.UPDATE_INTERVAL_MS) || 16,
 
     PLAYER_MOVE_SPEED: Number(process.env.PLAYER_MOVE_SPEED) || 12,

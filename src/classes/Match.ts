@@ -3,6 +3,7 @@ import Ball from "./Ball";
 import Player from "./Player";
 import {env} from "../utils/environment";
 import MatchExportInterface from "../interfaces/match.export.interface";
+import {score_registry_interface} from "../interfaces/score.registry.interface";
 
 export interface AiNeeds {
     playerID: number ,
@@ -13,7 +14,7 @@ export interface AiNeeds {
     ballSpeedY: number,
     myPosition: number,
     mySide: number,
-    isTraining: boolean
+    isTraining: boolean,
 }
 class Match implements matchInterface {
     public isRunning: boolean = false;
@@ -29,7 +30,7 @@ class Match implements matchInterface {
 
     public constructor(scoreGoal: number, match_id: number) {
         this.match_id = match_id;
-        this.ball = new Ball(10, 3, 3);
+        this.ball = new Ball();
         this.scoreGoal = scoreGoal;
         this.startedAt = -1;
         this.endedAt = -1;
@@ -63,7 +64,11 @@ class Match implements matchInterface {
     }
 
     public addPlayer(Player: Player): void {
-        this.players.length === 1 ? Player.side = "right" : Player.side = "left";
+        // if (TRAINING_MODE){
+        //     Player.side = 0;
+        //     return;
+        // }
+        this.players.length === 1 ? Player.side = 0: Player.side = 1;
         Player.currentmatch_id = this.match_id;
         this.players.push(Player);
     }
@@ -119,7 +124,7 @@ class Match implements matchInterface {
     // mySide: number
 
     public exportAiNeeds() : AiNeeds[] | null{
-        const player:Player[]|undefined = this.players.filter(Player => Player.AI === true)
+        const player:Player[]|undefined = this.players.filter(Player => Player.AI)
 
         let ret : AiNeeds[] | null = null;
         if (player.length > 0)
@@ -132,24 +137,21 @@ class Match implements matchInterface {
                 ballSpeedX: this.ball.ExportBallInfo().ballSpeedX,
                 ballSpeedY: this.ball.ExportBallInfo().ballSpeedY,
                 myPosition: player.ExportRenderInfo().relativeY,
-                mySide: player.side === "left"?0:1,
-                isTraining: player.isTraining
+                mySide: player.side,
+                isTraining: player.isTraining,
             }))
         }
-
-        // if (player === undefined)
-        // console.log ("export ai needs :", ret)
         return ret;
-        // return({
-        //     playerID:  player.Player_id,
-        //     myScore: player.score,
-        //     ballX: this.ball.ExportBallInfo().relativeBallX,
-        //     ballY: this.ball.ExportBallInfo().relativeBallY,
-        //     ballSpeedY: 3,
-        //     myPosition: player.ExportRenderInfo().relativeY,
-        //     PaddleHeight: 80,
-        //     mySide: player.side === "left"?0:1
-        // })
+    }
+    public exportRegistry(): (score_registry_interface | null)[] | null{
+        const player:Player[]|undefined = this.players.filter(Player => Player.AI)
+
+        let ret : (score_registry_interface | null)[] = [];
+        if (player.length > 0)
+        {
+            ret = player.map((player: Player) => player.tainingData)
+        }
+        return ret;
     }
 }
 

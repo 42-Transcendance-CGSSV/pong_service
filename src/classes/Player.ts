@@ -2,18 +2,20 @@ import {getRandomColor} from '../utils/getRandomColor';
 import {env} from '../utils/environment';
 import PlayerInterface from '../interfaces/player.interface';
 import {normalizePosition} from "../utils/maths";
+import {score_registry_interface} from "../interfaces/score.registry.interface";
 
 
 class Player implements PlayerInterface {
     public readonly AI: boolean = true;
     public readonly isTraining: boolean = false;
+    public          tainingData: score_registry_interface | null = null;
     public PaddlePos: number;
     public moveSpeed: number;
     public readonly PaddleWidth: number;
     public readonly PaddleHeight: number;
     public score: number = 0;
     public currentmatch_id: number = -1;
-    public side: "right" | "left" = "left";
+    public side: number = 0;
     public readonly Player_id: number;
     public readonly PlayerName: string;
     public readonly playerColor: string = getRandomColor();
@@ -22,10 +24,10 @@ class Player implements PlayerInterface {
     constructor(PlayerName: string, Player_id: number, AI: boolean, isTraining: boolean) {
         this.Player_id = Player_id;
         this.PlayerName = PlayerName;
-        this.PaddlePos = env.CANVAS_HEIGHT / 2 - env.PLAYER_PADDLE_HEIGHT / 2;
-        this.PaddleHeight = env.PLAYER_PADDLE_HEIGHT;
-        this.PaddleWidth = env.PADDLE_WIDTH;
-        this.moveSpeed = 12 * env.TIME_MULTIPLIER;
+        this.PaddleHeight = 0.1 * env.CANVAS_HEIGHT;
+        this.PaddlePos = env.CANVAS_HEIGHT / 2 //- this.PaddleHeight / 2;
+        this.PaddleWidth = env.PADDLE_WIDTH / 110;
+        this.moveSpeed = 0.0069 * env.CANVAS_WIDTH;
         this.AI = AI;
         this.isTraining = isTraining;
         if (env.TIME_MULTIPLIER !== 1)
@@ -63,10 +65,10 @@ class Player implements PlayerInterface {
     }
 
     public ExportPlayerInfo() {
-        return {...this, relativeY: normalizePosition(this.PaddlePos + env.PLAYER_PADDLE_HEIGHT / 2, env.CANVAS_HEIGHT, 0)};
+        return {...this, relativeY: normalizePosition(this.PaddlePos + this.PaddleHeight / 2, env.CANVAS_HEIGHT, 0)};
     }
     public ExportRenderInfo() {
-        return {Player_id:this.getID(), relativeY: normalizePosition(this.PaddlePos + env.PLAYER_PADDLE_HEIGHT / 2, env.CANVAS_HEIGHT, 0), side:this.getSide(), isTraining: this.isTraining}
+        return {Player_id:this.getID(), relativeY: normalizePosition(this.PaddlePos + this.PaddleHeight / 2, env.CANVAS_HEIGHT, 0), side:this.getSide(), isTraining: this.isTraining}
     }
     
 

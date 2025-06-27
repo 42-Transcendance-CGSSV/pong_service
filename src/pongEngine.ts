@@ -34,7 +34,6 @@ class pongEngine {
                         continue;
 
                     match.ball.moveBall();
-                    match.ball.checkCollision();
                     match.checkForWinner();
                     // for (const player of match.getPlayersInMatch()) {
                     //   if (player.AI) {
@@ -44,7 +43,7 @@ class pongEngine {
                 }
                 this.lastUpdate = currentTime;
             }
-        }, env.UPDATE_INTERVAL_MS);
+        }, 1);//env.UPDATE_INTERVAL_MS);
     }
 
     public stopGameLoop(): void {

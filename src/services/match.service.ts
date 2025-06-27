@@ -1,8 +1,8 @@
 import {IBasicResponse} from "../interfaces/response.interface";
 import MatchManager from "../managers/match.manager";
 import Match, {AiNeeds} from "../classes/Match";
-import {ApiError, ApiErrorCode} from "../utils/error.util";
 import Player from "../classes/Player";
+import {score_registry_interface} from "../interfaces/score.registry.interface";
 
 // TODO: remake
 // export function playerJoinMatch(playerName: string, Player_id: number, match_id: number, AI: boolean = false, isTraining: boolean = false): IBasicResponse {
@@ -18,18 +18,43 @@ import Player from "../classes/Player";
 
 export function getMatchData(match_id: number): IBasicResponse {
     const match = MatchManager.getInstance().getMatchById(match_id);
-    if (!match) throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "Unable to find the match")
+    if (!match) return {success: false, message: "match does not exist !", errorCode: "404"} as IBasicResponse;
         // return {success: false, message: "Unable to find the match"} as IBasicResponse;
     
     // console.log("Match data retrieved for match_id:", match_id, "INFO", match.ExportMatchInfo());
-    return {success: true, message: "Match found", data: match.exportRenderInfo()} as IBasicResponse;
+    return {success: true, message: "Match found", data: match.exportRenderInfo(), errorCode:"200"} as IBasicResponse;
 }
-export function getAiNeeds(match_id: number):  AiNeeds[] | null {
-    const match = MatchManager.getInstance().getMatchById(match_id);
+export function getAiNeeds():  AiNeeds[] | null {
+    const match: Match[] = MatchManager.getInstance().matches
+    const payload: AiNeeds[] = [];
     if (!match) return null
-    
+    match.forEach((m) => {
+        const needs = m.exportAiNeeds();
+        if (needs)
+            needs.forEach((n) => payload.push(n))
+    })
     // console.log("Match data retrieved for match_id:", match_id, "INFO", match.ExportMatchInfo());
-    return match.exportAiNeeds();
+    if (payload.length === 0) return null
+    return payload;
+}
+
+export function gettainingData():  score_registry_interface[] | null {
+    const match: Match[] = MatchManager.getInstance().matches
+    const payload: score_registry_interface[] = [];
+    if (!match) return null
+    match.forEach((m) => {
+        const needs = m.exportRegistry();
+        if (needs){
+            needs.forEach((n) => {
+                if (n)
+                    payload.push(n)
+            })
+
+        }
+    })
+    // console.log("Match data retrieved for match_id:", match_id, "INFO", match.ExportMatchInfo());
+    if (payload.length === 0) return null
+    return payload;
 }
 
 export function getMatchById(match_id: number) :Match|null{
@@ -49,17 +74,17 @@ export function getMatchById(match_id: number) :Match|null{
 export function getPlayerData(Player_id: number): IBasicResponse {
 
     const match = MatchManager.getInstance().getMatchByPlayer_id(Player_id);
-    if (!match) throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "Match does not exist")
+    if (!match)  return {success: false, message: "match does not exist !", errorCode: "404"} as IBasicResponse;
 
     const player = match.getPlayerById(Player_id);
-    if (!player) throw new ApiError(ApiErrorCode.USER_NOT_FOUND, "Player not found")
+    if (!player) return {success: false, message: "Unable to find the player !", errorCode: "404"} as IBasicResponse;
     return {success: true, message: "Player found", data: player.ExportPlayerInfo()} as IBasicResponse;
 }
 
 
 export function togglePauseMatch(match_id: number): IBasicResponse {
     const match = MatchManager.getInstance().getMatchById(match_id);
-    if (!match) throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "match not found")
+    if (!match) return {success: false, message: "match does not exist !", errorCode: "404"} as IBasicResponse;
         // return {success: false, message: "Unable to find the match"} as IBasicResponse;
 
 
@@ -84,7 +109,7 @@ export function startMatch(match: Match): IBasicResponse {
 
 export function endMatch(match_id: number): IBasicResponse {
     const match = MatchManager.getInstance().getMatchById(match_id);
-    if (!match) throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "match not found")
+    if (!match) return {success: false, message: "match does not exist !", errorCode: "404"} as IBasicResponse;
         // return {success: false, message: "Unable to find the match"} as IBasicResponse;
 
     match.startedAt = -1;
@@ -99,17 +124,15 @@ export function endMatch(match_id: number): IBasicResponse {
 }
 
 
-export function movePaddle(Player_id: number, direction: "up" | "down"): IBasicResponse {
+export function movePaddle(Player_id: number, direction: "up" | "down"): IBasicResponse | null {
     const match = MatchManager.getInstance().getMatchByPlayer_id(Player_id);
-    if (!match) throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "match not found")
-        // return {success: false, message: "Unable to find a match with this player inside !"} as IBasicResponse;
+    if (!match) return {success: false, message: "Unable to find a match with this player inside !", errorCode: "404"} as IBasicResponse;
     const player:Player|undefined = match.getPlayerById(Player_id);
-    if (!player) throw new ApiError(ApiErrorCode.USER_NOT_FOUND, "player not found")
-        // return {success: false, message: "Unable to find the player in this match !"} as IBasicResponse;
-    if (!match.isRunning) throw new ApiError(ApiErrorCode.INSUFFICIENT_PERMISSIONS, "Match is not running yet !")
-        // return {success: false, message: "Match is not running yet !"} as IBasicResponse;
+    if (!player) return {success: false, message: "Unable to find the player in this match !", errorCode: "404"} as IBasicResponse;
+    if (!match.isRunning) return {success: false, message: "Match is not running yet !", errorCode: "400"} as IBasicResponse;
 
     direction === "down" ? player.moveDown() : player.moveUp();
-    console.log(`Player ${player.PlayerName} moved paddle ${direction} in match ${match.match_id}`);
-    return {success: true, message: "Paddle has been moved " + direction} as IBasicResponse;
+    // console.log(`Player ${player.PlayerName} moved paddle ${direction} in match ${match.match_id}`);
+    // return {success: true, message: "Paddle has been moved " + direction, errorCode:"200"} as IBasicResponse;
+    return null; // TODO: remove this null return
 }
