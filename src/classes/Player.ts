@@ -3,6 +3,7 @@ import {env} from '../utils/environment';
 import PlayerInterface from '../interfaces/player.interface';
 import {normalizePosition} from "../utils/maths";
 import {score_registry_interface} from "../interfaces/score.registry.interface";
+import Match from './Match';
 
 
 class Player implements PlayerInterface {
@@ -20,6 +21,14 @@ class Player implements PlayerInterface {
     public readonly PlayerName: string;
     public readonly playerColor: string = getRandomColor();
     public ready: boolean = false;
+    public match_id: Match | null = null;
+
+    
+    public inTournament: boolean = true;
+    public designatedNextMatch: number = -1;
+    public tournamentScore: number = 0;
+
+
 
     constructor(PlayerName: string, Player_id: number, AI: boolean, isTraining: boolean) {
         this.Player_id = Player_id;

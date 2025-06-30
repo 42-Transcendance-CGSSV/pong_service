@@ -122,7 +122,7 @@ class SendAllowed {
         public moveBall(): void {
             this.ballX += this.ballVelocityX * env.TIME_MULTIPLIER;
             this.ballY += this.ballVelocityY * env.TIME_MULTIPLIER;
-            console.log("moving Ball position: ", this.ballX, this.ballY, "Ball speed: ", this.ballVelocityX, this.ballVelocityY);
+            // console.log("moving Ball position: ", this.ballX, this.ballY, "Ball speed: ", this.ballVelocityX, this.ballVelocityY);
             
             this.backIntime();
             if (this.ballY - this.ballRadius <= 0 || this.ballY + this.ballRadius >= env.CANVAS_HEIGHT) {
@@ -246,7 +246,7 @@ class SendAllowed {
                         // this.ballVelocityY = this.raiseBallSpeed(this.ballVelocityY, "+") ;
                         this.ballVelocityY = Math.random() > 0.5 ? this.ballVelocityY + nextBallVelocityY : -this.ballVelocityY + nextBallVelocityY;
                         this.lastToHit = player;
-                        console.log("left",this.ballVelocityX, this.ballVelocityY);
+                        // console.log("left",this.ballVelocityX, this.ballVelocityY);
                         break;
                     }
                     if (player !== this.lastToHit &&

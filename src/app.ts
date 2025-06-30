@@ -7,10 +7,11 @@ import {EventEmitter} from "events"
 import {pongController} from "./controllers/controller.game";
 import {env} from "./utils/environment";
 import {registerGameListeners} from "./listeners/game.listeners";
-import {Engine} from "./pongEngine";
+import pongEngine from "./pongEngine";
 import {registerSocketCoreListeners} from "./listeners/core.listeners";
 import {ApiError} from "./utils/error.util";
 import {IBasicResponse} from "./interfaces/response.interface";
+import { Matchmaking } from "./classes/Matchmaking";
 // import { matchmaking } from "./classes/Matchmaking";
 
 const app = fastify({logger: false, ajv: {customOptions: {removeAdditional: "all"}}});
@@ -19,7 +20,9 @@ export const eventEmitter = new EventEmitter();
 function start(): void {
     try {
         // matchmaking
-        Engine.startGameLoop();
+        // Engine.startGameLoop();
+        pongEngine.getInstance().startGameLoop();
+        Matchmaking.getInstance();
 
         app.register(websockets);
         app.register(pongController);

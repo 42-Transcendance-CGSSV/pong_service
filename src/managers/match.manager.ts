@@ -4,11 +4,29 @@ import Ball from "../classes/Ball";
 
 export default class MatchManager {
 
-    public readonly matches: Match[] = [];
-    public          players: Player[] = [];
+    public  matches: Match[] = [];
+    public  players: Player[] = [];
+
+
+    public  queue:   Player[] = [];
+    
+    public  tournamentQueue: Player[] = [];
+    public  TournamentMatches: Match[] = [];
+
+
+
+
     private static instance: MatchManager | null = null;
     private matchCounter: number = 0;
 
+    public purgePlayer(player_id: number): void {
+        this.players = this.players.filter(player => player.Player_id !== player_id);
+        this.matches.forEach(match => {
+            match.players = match.players.filter(p => p.Player_id !== player_id);
+        });
+        return;
+        console.error("Player not found");
+    }
     public createMatch(scoreGoal: number, match_id:number ): Match {
         for (const match of this.matches) {
             if (match.match_id === match_id) {
@@ -27,22 +45,22 @@ export default class MatchManager {
         return player;
     }
 
-    public seatPlayer(player_id:number, match_id:number){
+    public seatPlayer(player_id:number, match_id:number) :boolean{
         for (const match of this.matches) {
             if (match.match_id === match_id) {
                 for (const player of this.players) {
                     if (player.Player_id === player_id) {
                         if (match.players.length < 2 && !match.isRunning) {
-                            match.addPlayer(player);
-                            return;
+                            return match.addPlayer(player);
                         } else {
                             console.error("Match is already running or full");
-                            return;
+                            return false;
                         }
                     }
                 }
             }
         }
+        return false;
     }
     public playerExists(player_id: number): boolean {
         for (const player of this.players) {

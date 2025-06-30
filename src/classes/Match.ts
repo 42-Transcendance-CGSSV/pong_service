@@ -4,6 +4,7 @@ import Player from "./Player";
 import {env} from "../utils/environment";
 import MatchExportInterface from "../interfaces/match.export.interface";
 import {score_registry_interface} from "../interfaces/score.registry.interface";
+import MatchManager from "../managers/match.manager";
 
 export interface AiNeeds {
     playerID: number ,
@@ -26,6 +27,11 @@ class Match implements matchInterface {
     public pausedAt: number = -1;
     public endedAt: number;
     public winner_id: number = -1;
+
+    public interval: NodeJS.Timeout | null = null;
+    public winner: Player | undefined = undefined;
+    public PlayerLeft: number = -1;
+    // designatedNextMatch[0]
 
 
     public constructor(scoreGoal: number, match_id: number) {
@@ -63,14 +69,18 @@ class Match implements matchInterface {
         }
     }
 
-    public addPlayer(Player: Player): void {
+    public addPlayer(Player: Player): boolean {
         // if (TRAINING_MODE){
         //     Player.side = 0;
         //     return;
         // }
         this.players.length === 1 ? Player.side = 0: Player.side = 1;
         Player.currentmatch_id = this.match_id;
-        this.players.push(Player);
+        const check = this.players.length;
+        if (this.players.push(Player) === check + 1) {
+            return true;
+        }
+        return false;
     }
 
     public getPlayersInMatch(): Player[] {
@@ -152,6 +162,100 @@ class Match implements matchInterface {
             ret = player.map((player: Player) => player.tainingData)
         }
         return ret;
+    }
+
+
+
+
+
+
+
+        public pushPlayer(player: Player): boolean {
+        if (!player) return false;
+        if (player && player.currentmatch_id !== -1) {
+            console.error(`Player ${player.PlayerName} is not valid.`);
+            return false;
+        }
+        if (player && this.players.some(p => p.Player_id === player.Player_id)) {
+            console.log(`Player ${player.PlayerName} is already in the match.`);
+            return false;
+        }
+        if (player && this.players.length >= 2) {
+            console.log(`Match ${this.match_id} is already full.`);
+            return false;
+        }
+        this.players.push(player);
+        player.match_id = this;
+        player.currentmatch_id = this.match_id;
+        // if (!player.designatedNextMatch) {
+        //     player.designatedNextMatch = [];
+        // }
+        console.log(`Player ${player.PlayerName} has joined match ${this.match_id}.`);
+        if (this.players.length === 1) {
+            console.log(`Match ${this.match_id} waiting for second player.`);
+            return true;
+        }
+        if (this.players.length === 2 && !this.interval) {
+            console.log(`Match ${this.match_id} has enough players to start monitoring.`);
+            this.GameMonitoring();
+        }
+        return false;
+    }
+    
+    public GameMonitoring(): void {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+        if (this.endedAt !== -1) return; 
+        this.interval = setInterval(() => {
+            this.players = this.players.filter(player => player.Player_id !== -1);
+
+            if (this.PlayerLeft !== -1) {
+                this.winner = this.players.find(player => player.Player_id !== this.PlayerLeft);
+                // fullPurgePlayers(this.PlayerLeft);
+            }
+            else {
+                this.winner = this.players.find(player => player.score >= this.scoreGoal);
+            }
+            if (this.winner) {
+                console.log(`Match ${this.match_id} has a winner!`);
+                clearInterval(this.interval!);
+                this.interval = null;
+                this.endedAt = Date.now();
+                if (this.winner.inTournament){
+                    this.winner.tournamentScore += 1000 + this.winner.score;
+                    MatchManager.getInstance().TournamentMatches.push(this);
+                    // const sideMatch = indexof Matchmaking.getInstance().TournamentMatches.fin
+                    // this.winner.designatedNextMatch = 
+                    // Matchmaking.getInstance().TournamentMatches.;
+                }
+                for (const player of this.players) {
+
+                    player.currentmatch_id = -1;
+                    player.score = 0;
+                    if (player.Player_id === this.winner?.Player_id) {
+                        console.log(`Player ${player.PlayerName} won the match!`);
+                        player.tournamentScore += 1000 + player.score;
+                    } else {
+                        console.log(`Player ${player.PlayerName} lost the match.`);
+                    }
+                }
+                this.players = [];
+                MatchManager.getInstance().matches = MatchManager.getInstance().matches.filter(match => match.match_id !== this.match_id);
+                MatchManager.getInstance().TournamentMatches = MatchManager.getInstance().TournamentMatches.filter(match => match.match_id !== this.match_id);
+                console.log(`Match ${this.match_id} ended at ${new Date(this.endedAt).toLocaleString()}`);
+                return;
+            }
+            if (this.players.length === 0) {
+                console.log(`Match ${this.match_id} has no players.`);
+                return;
+            }
+            if (this.players.length < 2) {
+                console.log(`Match ${this.match_id} somehow has only one player.`);
+                return;
+            }
+        }, 1000);
     }
 }
 

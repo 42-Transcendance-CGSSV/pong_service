@@ -9,15 +9,14 @@ class pongEngine {
     private gameStatus?: NodeJS.Timeout;
     private lastUpdate: number = 0;
 
-    constructor() {
-        /*
-                const player1 = new Player("marc", 0, "left");
-                const player2 = new Player("philip", 0, "right");
-                let initialMatch = new Match(0, 3);
-                initialMatch.initNewPlayer(player1);
-                initialMatch.initNewPlayer(player2);
+    private static instance: pongEngine | null = null;
 
-                this.matches.push(initialMatch);*/
+    public static getInstance(): pongEngine {
+        if (this.instance === null) this.instance = new pongEngine();
+        return this.instance;
+    }
+
+    constructor() {
     }
 
     public startGameLoop(): void {
@@ -30,20 +29,15 @@ class pongEngine {
             const deltaTime = currentTime - this.lastUpdate;
             if (deltaTime >= env.UPDATE_INTERVAL_MS) {
                 for (const match of MatchManager.getInstance().matches) {
-                    if (!match.isRunning)
-                        continue;
+                    // if (!match.isRunning) : TODO: UNCOMENT
+                    //     continue;
 
                     match.ball.moveBall();
                     match.checkForWinner();
-                    // for (const player of match.getPlayersInMatch()) {
-                    //   if (player.AI) {
-                    //     this.lowBot(player);
-                    //   }
-                    // }
                 }
                 this.lastUpdate = currentTime;
             }
-        }, 1);//env.UPDATE_INTERVAL_MS);
+        }, 17);//env.UPDATE_INTERVAL_MS);
     }
 
     public stopGameLoop(): void {
@@ -54,4 +48,5 @@ class pongEngine {
     }
 }
 
-export let Engine = new pongEngine();
+export default pongEngine;
+// export let Engine = new pongEngine();
