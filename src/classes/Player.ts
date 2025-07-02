@@ -4,12 +4,13 @@ import PlayerInterface from '../interfaces/player.interface';
 import {normalizePosition} from "../utils/maths";
 import {score_registry_interface} from "../interfaces/score.registry.interface";
 import Match from './Match';
+import {app} from "../app";
 
 
 class Player implements PlayerInterface {
     public readonly AI: boolean = true;
     public readonly isTraining: boolean = false;
-    public          tainingData: score_registry_interface | null = null;
+    public tainingData: score_registry_interface | null = null;
     public PaddlePos: number;
     public moveSpeed: number;
     public readonly PaddleWidth: number;
@@ -23,11 +24,10 @@ class Player implements PlayerInterface {
     public ready: boolean = false;
     public match_id: Match | null = null;
 
-    
+
     public inTournament: boolean = true;
     public designatedNextMatch: number = -1;
     public tournamentScore: number = 0;
-
 
 
     constructor(PlayerName: string, Player_id: number, AI: boolean, isTraining: boolean) {
@@ -40,7 +40,7 @@ class Player implements PlayerInterface {
         this.AI = AI;
         this.isTraining = isTraining;
         if (env.TIME_MULTIPLIER !== 1)
-            console.log("Player: WARNING TIME MULTIPLIER SET TO ", env.TIME_MULTIPLIER)
+            app.log.warn("Player: WARNING TIME MULTIPLIER SET TO ", env.TIME_MULTIPLIER)
     }
 
     public moveUp() {
@@ -58,7 +58,7 @@ class Player implements PlayerInterface {
     }
 
     public getID() {
-        return this.Player_id? this.Player_id:-1;
+        return this.Player_id ? this.Player_id : -1;
     }
 
     public getPos() {
@@ -76,10 +76,16 @@ class Player implements PlayerInterface {
     public ExportPlayerInfo() {
         return {...this, relativeY: normalizePosition(this.PaddlePos + this.PaddleHeight / 2, env.CANVAS_HEIGHT, 0)};
     }
+
     public ExportRenderInfo() {
-        return {Player_id:this.getID(), relativeY: normalizePosition(this.PaddlePos + this.PaddleHeight / 2, env.CANVAS_HEIGHT, 0), side:this.getSide(), isTraining: this.isTraining}
+        return {
+            Player_id: this.getID(),
+            relativeY: normalizePosition(this.PaddlePos + this.PaddleHeight / 2, env.CANVAS_HEIGHT, 0),
+            side: this.getSide(),
+            isTraining: this.isTraining
+        }
     }
-    
+
 
 }
 

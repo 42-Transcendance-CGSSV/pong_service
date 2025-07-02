@@ -1,20 +1,49 @@
 import fastify from "fastify";
 import websockets from '@fastify/websocket'
-import cors from "@fastify/cors";
 
 import {EventEmitter} from "events"
+import {env} from "./utils/environment";
 
 import {pongController} from "./controllers/controller.game";
-import {env} from "./utils/environment";
 import {registerGameListeners} from "./listeners/game.listeners";
 import pongEngine from "./pongEngine";
 import {registerSocketCoreListeners} from "./listeners/core.listeners";
 import {ApiError} from "./utils/error.util";
 import {IBasicResponse} from "./interfaces/response.interface";
-import { Matchmaking } from "./classes/Matchmaking";
+import {Matchmaking} from "./classes/Matchmaking";
 // import { matchmaking } from "./classes/Matchmaking";
 
-const app = fastify({logger: false, ajv: {customOptions: {removeAdditional: "all"}}});
+export const app = fastify({
+    logger: {
+        transport: {
+            target: "pino-pretty",
+            options: {
+                colorize: true
+            }
+        },
+        enabled: true,
+        level: env.LOG_LEVEL,
+        timestamp: () => {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, "0");
+            const month = String(now.getMonth() + 1).padStart(2, "0");
+            const year = String(now.getFullYear()).slice(-2);
+            const hours = String(now.getHours()).padStart(2, "0");
+            const minutes = String(now.getMinutes()).padStart(2, "0");
+            const seconds = String(now.getSeconds()).padStart(2, "0");
+            const milliseconds = String(now.getMilliseconds());
+            const logTime = env.LOG_TIME_FORMAT.replace("${day}", day)
+                .replace("${month}", month)
+                .replace("${year}", year)
+                .replace("${hours}", hours)
+                .replace("${minutes}", minutes)
+                .replace("${seconds}", seconds)
+                .replace("${milliseconds}", milliseconds);
+            return `,"time":"${logTime}"`;
+        }
+    },
+    disableRequestLogging: true
+});
 export const eventEmitter = new EventEmitter();
 
 function start(): void {
@@ -29,11 +58,6 @@ function start(): void {
 
         registerSocketCoreListeners(app);
         registerGameListeners(app);
-        app.register(cors, {
-            origin: "*",
-            methods: ["GET", "POST", "PUT", "DELETE"],
-            allowedHeaders: ["Content-Type", "Authorization"],
-        });
 
         app.setErrorHandler((error, _request, reply) => {
             if (error.name === "ApiError") {
@@ -53,14 +77,14 @@ function start(): void {
             } as IBasicResponse);
         });
 
-        app.listen({port: Number(env.PORT)});
+        app.listen({port: 3001, host: "0.0.0.0"});
     } catch (error) {
         app.log.error(error);
         process.exit(1);
     }
 }
 
-app.get(process.env.BASE_ROUTE + "/healthcheck", (_req, response) => {
+app.get("/healthcheck", (_req, response) => {
     response.send({message: "Success"});
 });
 

@@ -1,23 +1,21 @@
 import Match from "../classes/Match";
 import Player from "../classes/Player";
 import Ball from "../classes/Ball";
+import {app} from "../app";
 
 export default class MatchManager {
 
-    public  matches: Match[] = [];
-    public  players: Player[] = [];
-
-
-    public  queue:   Player[] = [];
-    
-    public  tournamentQueue: Player[] = [];
-    public  TournamentMatches: Match[] = [];
-
-
-
-
     private static instance: MatchManager | null = null;
+    public matches: Match[] = [];
+    public players: Player[] = [];
+    public queue: Player[] = [];
+    public tournamentQueue: Player[] = [];
+    public TournamentMatches: Match[] = [];
     private matchCounter: number = 0;
+
+    public static getInstance(): MatchManager {
+        return this.instance ? this.instance : (this.instance = new MatchManager());
+    }
 
     public purgePlayer(player_id: number): void {
         this.players = this.players.filter(player => player.Player_id !== player_id);
@@ -25,12 +23,13 @@ export default class MatchManager {
             match.players = match.players.filter(p => p.Player_id !== player_id);
         });
         return;
-        console.error("Player not found");
+        app.log.error("Player not found");
     }
-    public createMatch(scoreGoal: number, match_id:number ): Match {
+
+    public createMatch(scoreGoal: number, match_id: number): Match {
         for (const match of this.matches) {
             if (match.match_id === match_id) {
-                console.error("Match with this ID already exists");
+                app.log.error("Match with this ID already exists");
                 return match;
             }
         }
@@ -39,13 +38,14 @@ export default class MatchManager {
         this.matchCounter++;
         return match;
     }
+
     public createPlayer(player_name: string, user_id: number, is_ai: boolean, isTraining: boolean): Player {
         let player = new Player(player_name, user_id, is_ai, isTraining);
         this.players.push(player);
         return player;
     }
 
-    public seatPlayer(player_id:number, match_id:number) :boolean{
+    public seatPlayer(player_id: number, match_id: number): boolean {
         for (const match of this.matches) {
             if (match.match_id === match_id) {
                 for (const player of this.players) {
@@ -53,7 +53,7 @@ export default class MatchManager {
                         if (match.players.length < 2 && !match.isRunning) {
                             return match.addPlayer(player);
                         } else {
-                            console.error("Match is already running or full");
+                            app.log.error("Match is already running or full");
                             return false;
                         }
                     }
@@ -62,6 +62,7 @@ export default class MatchManager {
         }
         return false;
     }
+
     public playerExists(player_id: number): boolean {
         for (const player of this.players) {
             if (player.Player_id === player_id) {
@@ -76,6 +77,7 @@ export default class MatchManager {
             this.matches.splice(this.matches.indexOf(match), 1);
         }
     }
+
     public removePlayer(player: Player): void {
         if (this.players.includes(player)) {
             this.players.splice(this.players.indexOf(player), 1);
@@ -91,7 +93,7 @@ export default class MatchManager {
     }
 
     public getMatchById(match_id: number): Match | undefined {
-        let tmp:Match | undefined = undefined;
+        let tmp: Match | undefined = undefined;
         for (const match of this.matches) {
             if (!match)
                 continue;
@@ -135,7 +137,6 @@ export default class MatchManager {
         return null;
     }
 
-
     public getPlayersByBall(ball: Ball): Player[] | null {
         let match = this.getMatchByBall(ball);
         if (!match)
@@ -143,10 +144,6 @@ export default class MatchManager {
         if (!match.players)
             return null;
         return match.players;
-    }
-
-    public static getInstance(): MatchManager {
-        return this.instance ? this.instance : (this.instance = new MatchManager());
     }
 
 }

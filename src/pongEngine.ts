@@ -1,28 +1,28 @@
 import {env} from "./utils/environment";
 import MatchManager from "./managers/match.manager";
+import {app} from "./app";
 
 /*import Player from "./classes/Player";
 import Match from "./classes/Match";*/
 
 
 class pongEngine {
+    private static instance: pongEngine | null = null;
     private gameStatus?: NodeJS.Timeout;
     private lastUpdate: number = 0;
 
-    private static instance: pongEngine | null = null;
+    constructor() {
+    }
 
     public static getInstance(): pongEngine {
         if (this.instance === null) this.instance = new pongEngine();
         return this.instance;
     }
 
-    constructor() {
-    }
-
     public startGameLoop(): void {
         if (this.gameStatus)
             return;
-        console.log("Starting game loop");
+        app.log.info("Starting game loop");
         this.lastUpdate = Date.now();
         this.gameStatus = setInterval(() => {
             const currentTime = Date.now();
