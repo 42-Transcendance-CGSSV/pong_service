@@ -10,6 +10,7 @@ import {startMatch} from "../services/match.service";
 import {ApiError, ApiErrorCode} from "../utils/error.util";
 import {fullPurgePlayers} from "../classes/Matchmaking";
 
+
 export function pongController(fastify: FastifyInstance, _options: any, done: () => void) {
 
     fastify.register(async function (fastify) {
@@ -18,6 +19,13 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
                 const socket = connection;
 
                 eventEmitter.emit("ws-opened", socket);
+
+                //TODO: clear on close
+                setInterval(() => {
+                    if (socket.readyState === socket.OPEN) {
+                        socket.ping();
+                    }
+                }, 10000);
 
                 socket.on('message', (message: Buffer) => {
                     try {

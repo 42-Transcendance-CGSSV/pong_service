@@ -13,6 +13,7 @@ import Match from "../classes/Match";
 import {clearInterval} from "timers";
 import {env} from "../utils/environment";
 import {SendAllowed} from "../classes/Ball";
+import type { WebSocket } from "ws";
 // import { SendAllowed } from "../classes/Ball";
 // import {env} from "../utils/environment";
 // import {env} from "../utils/environment";

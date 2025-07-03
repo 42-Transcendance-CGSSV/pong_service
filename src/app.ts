@@ -50,10 +50,11 @@ function start(): void {
     try {
         // matchmaking
         // Engine.startGameLoop();
+        app.register(websockets);
+
         pongEngine.getInstance().startGameLoop();
         Matchmaking.getInstance();
 
-        app.register(websockets);
         app.register(pongController);
 
         registerSocketCoreListeners(app);

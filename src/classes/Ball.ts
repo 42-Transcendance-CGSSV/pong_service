@@ -233,9 +233,8 @@ class Ball implements BallInterface {
                 continue;
             }
             const nextBallVelocityY = Math.random() * this.ballVelocityY + 0.01;
-            if (player.getSide() === 0)//TRAINING_MODE)
+            if (1)//player.getSide() === 0)//TRAINING_MODE)
             {
-                // console.log("Player: ", player.PlayerName, "Pos: ", player.getPos(), "BallY: ", this.ballY, "BallX: ", this.ballX, "BallRadius: ", this.ballRadius);
                 if (this.ballY < player.getPos())
                     player.moveUp();
                 else if (this.ballY > player.getPos() + player.getPaddleHeight())
@@ -260,7 +259,7 @@ class Ball implements BallInterface {
                 this.ballX + this.ballRadius > env.CANVAS_WIDTH - player.getPaddleWidth() &&
                 this.ballY > player.getPos() &&
                 this.ballY < player.getPos() + player.getPaddleHeight()) {
-                SendAllowed.setAnswer(this.ballY, 0);
+                // SendAllowed.setAnswer(this.ballY, 0);
 
                 // console.log("right A ",this.ballVelocityX, this.ballVelocityY);
                 this.ballVelocityX = -this.ballVelocityX;

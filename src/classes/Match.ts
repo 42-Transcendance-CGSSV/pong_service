@@ -73,17 +73,9 @@ class Match implements matchInterface {
     }
 
     public addPlayer(Player: Player): boolean {
-        // if (TRAINING_MODE){
-        //     Player.side = 0;
-        //     return;
-        // }
-        this.players.length === 1 ? Player.side = 0 : Player.side = 1;
         Player.currentmatch_id = this.match_id;
         const check = this.players.length;
-        if (this.players.push(Player) === check + 1) {
-            return true;
-        }
-        return false;
+        return this.players.push(Player) === check + 1;
     }
 
     public getPlayersInMatch(): Player[] {
