@@ -91,6 +91,42 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
     );
 
 
+
+
+    fastify.get("/matchByPlayerId/:user_id", {
+            schema: {params: schemas.object().prop("user_id", schemas.number().minimum(0).required())},
+            handler: (request: FastifyRequest, reply: FastifyReply) => {
+                if (!(request.params && typeof request.params === "object" && "user_id" in request.params))
+                    throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "players not found")
+                const userId = request.params.user_id as number;
+                app.log.debug(`Fetching matches with user_id: ${userId}`);
+                const players = MatchManager.getInstance().players;
+                if (players.length === 0) {
+                    throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "players not found")
+                }
+                const player = players.find(p => p.Player_id === userId);
+                if (!player) {
+                    throw new ApiError(ApiErrorCode.USER_NOT_FOUND, `Player with user_id ${userId} not found`);
+                }
+                const match = MatchManager.getInstance().getMatchByPlayer_id(userId);
+                if (!match) {
+                    throw new ApiError(ApiErrorCode.MATCH_NOT_FOUND, `Match for player with user_id ${userId} not found`);
+                }
+                app.log.debug(`//////////////////////////////////////////////////////Match found for user_id ${userId}: ${match.match_id}`);
+                reply.send({success: true, message: "Player found", data: match.match_id} as IBasicResponse);
+            }
+        }
+    );
+
+
+
+
+
+
+
+
+
+
     fastify.get("/matches", {
             handler: (_request: FastifyRequest, reply: FastifyReply) => {
                 // return all matches

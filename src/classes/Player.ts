@@ -25,7 +25,7 @@ class Player implements PlayerInterface {
     public match_id: Match | null = null;
 
 
-    public inTournament: boolean = true;
+    public inTournament: boolean = false;
     public designatedNextMatch: number = -1;
     public tournamentScore: number = 0;
 

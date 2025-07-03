@@ -9,60 +9,6 @@ import {app} from "../app";
 // const BASE = 'http://localhost:3000/api';
 
 const MManager: MatchManager = MatchManager.getInstance();
-// @ts-ignore
-// class _Player {
-
-//     public Player_id: number;
-//     public PlayerName: string | null = null;
-//     public match_id: Match | null = null;
-//     public score: number = 0;
-
-//     public inTournament: boolean = true;
-//     public designatedNextMatch: number[] = [];
-//     public tournamentScore: number = 0;
-
-
-//     private interval: NodeJS.Timeout | null = null;
-
-
-//     constructor(Player_id: number, PlayerName: string) {
-//         this.Player_id = Player_id;
-//         this.PlayerName = PlayerName;
-//         this.match_id = null;
-//         this.selfUpdate();
-//     }
-//     private selfUpdate(): void {
-//         if (this.interval) {
-//             clearInterval(this.interval);
-//             this.interval = null;
-//         }
-//         this.interval = setInterval(() => {
-//             if (this.Player_id === -1) {
-//                 return;
-//             }
-//             getPlayerInfo(this.Player_id).then(data => {
-//                 if (!data) {
-//                     app.log.error(`Player ${this.PlayerName} left the game`);
-//                     if (this.match_id) {
-//                         this.match_id.PlayerLeft = this.Player_id;
-//                         this.match_id.GameMonitoring();
-//                     }
-//                     clearInterval(this.interval!);
-//                     this.interval = null;
-//                     fullPurgePlayers(this.Player_id);
-//                     console.log(`Player ${this.PlayerName} has been removed from the game.`);
-//                     return;
-//                 }
-//                 this.Player_id = data.Player_id || this.Player_id
-//                 this.PlayerName = data.PlayerName || this.PlayerName
-//                 this.score = data.score || this.score;
-//                 // console.log(`Player ${this.PlayerName} updated: ID=${this.Player_id}, Score=${this.score}`);
-//                 // this.match_id = data?.currentmatch_id || null;
-//             })
-//             console.log(MatchManager.getInstance().matches)
-//         }, 1000);
-//     }
-// }
 
 export function fullPurgePlayers(Player_id: number) {
     // if (Player_id === -1) {return;}
@@ -104,7 +50,7 @@ export class Matchmaking {
             const p2 = MManager.queue.shift();
             app.log.info(`Pairing players: ${p1?.PlayerName} and ${p2?.PlayerName}`);
             if (p1 && p2) {
-                let m = new Match(5, Math.floor(Math.random() * 1000000));
+                let m = new Match(5000, Math.floor(Math.random() * 1000000));
                 m.pushPlayer(p1);
                 m.pushPlayer(p2);
                 MManager.matches.push(m);
@@ -154,7 +100,7 @@ export class Matchmaking {
             const p2 = MManager.tournamentQueue.shift();
             app.log.debug(`Pairing players: ${p1?.PlayerName} and ${p2?.PlayerName}`);
             if (p1 && p2) {
-                let m = new Match(5, Math.floor(Math.random() * 1000000));
+                let m = new Match(5000, Math.floor(Math.random() * 1000000));
                 m.pushPlayer(p1);
                 m.pushPlayer(p2);
                 MManager.TournamentMatches.push(m);
@@ -163,7 +109,7 @@ export class Matchmaking {
 
 
         // this.pushPairsFrom(MManager.tournamentQueue, MManager.TournamentMatches);
-        app.log.debug(">>>>>>>>>> Tournament Matches: ", MManager.TournamentMatches);
+        app.log.debug(`>>>>>>>>>> Tournament Matches: ${MManager.TournamentMatches}`);
         // if (MManager.TournamentMatches.length > 1) {
         //     for (let i = 0; i < MManager.TournamentMatches.length -1 ; i++) {
         //         let indexp1 = i  % MManager.TournamentMatches.length;
@@ -199,9 +145,9 @@ export class Matchmaking {
             //     this.players.push(new Player(newplayer.Player_id, newplayer.PlayerName));
             //     newplayer = PlayersData.find(p => !this.players.some(player => player.Player_id === p.Player_id));
             // }
-            app.log.debug(">>>>>>>", MManager.players.length, " players");
-            app.log.debug(">>>>>>>", MManager.queue.length, " players in queue");
-            app.log.debug(">>>>>>>", MManager.tournamentQueue.length, " players in tournament");
+            app.log.debug(`>>>>>>>>>> Players: ${MManager.players.length}`);
+            app.log.debug(`>>>>>>> Players in queue: ${MManager.queue.length}`);
+            app.log.debug(`>>>>>>> Players in tournament: ${MManager.tournamentQueue.length}`);
             if (MManager.players.length === 0) {
                 app.log.debug("No players available for matchmaking.");
                 return;
@@ -239,7 +185,7 @@ export class Matchmaking {
     private sendToTournamentQueue(): void {
         MManager.tournamentQueue = MManager.players.filter(player => player.inTournament === true);
         MManager.tournamentQueue = MManager.tournamentQueue.filter(player => player.match_id === null && player.Player_id !== -1);
-        app.log.debug(">>>>>>> HERE", MManager.tournamentQueue.length, " players in tournament");
+        console.clear();
         MManager.tournamentQueue = MManager.tournamentQueue.sort((a, b) => a.Player_id - b.Player_id)
     }
 
