@@ -193,15 +193,10 @@ export class Matchmaking {
             this.sendToQueue();
             this.sendToTournamentQueue();
             MManager.matches = MManager.matches.filter(match => match.endedAt === -1);
-            // const PlayersData = await getPlayers();
-            // let newplayer = PlayersData.find(p => !this.players.some(player => player.Player_id === p.Player_id));
-            // while (newplayer) {
-            //     this.players.push(new Player(newplayer.Player_id, newplayer.PlayerName));
-            //     newplayer = PlayersData.find(p => !this.players.some(player => player.Player_id === p.Player_id));
-            // }
-            app.log.debug(">>>>>>>", MManager.players.length, " players");
-            app.log.debug(">>>>>>>", MManager.queue.length, " players in queue");
-            app.log.debug(">>>>>>>", MManager.tournamentQueue.length, " players in tournament");
+
+            app.log.debug(`>>>>>>>, ${MManager.players.length},  players`);
+            app.log.debug(`>>>>>>>, ${MManager.queue.length},  players in queue`);
+            app.log.debug(`>>>>>>> ${MManager.tournamentQueue.length}, players in tournament`);
             if (MManager.players.length === 0) {
                 app.log.debug("No players available for matchmaking.");
                 return;
@@ -239,7 +234,7 @@ export class Matchmaking {
     private sendToTournamentQueue(): void {
         MManager.tournamentQueue = MManager.players.filter(player => player.inTournament === true);
         MManager.tournamentQueue = MManager.tournamentQueue.filter(player => player.match_id === null && player.Player_id !== -1);
-        app.log.debug(">>>>>>> HERE", MManager.tournamentQueue.length, " players in tournament");
+        app.log.debug(`>>>>>> HERE ${MManager.tournamentQueue.length}  players in tournament`);
         MManager.tournamentQueue = MManager.tournamentQueue.sort((a, b) => a.Player_id - b.Player_id)
     }
 

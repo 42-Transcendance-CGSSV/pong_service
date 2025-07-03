@@ -91,6 +91,40 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
     );
 
 
+    fastify.get("/matchByPlayerId/:user_id", {
+            schema: {params: schemas.object().prop("user_id", schemas.number().minimum(0).required())},
+            handler: (request: FastifyRequest, reply: FastifyReply) => {
+                if (!(request.params && typeof request.params === "object" && "user_id" in request.params))
+                    throw new Error("Invalid request");
+                const userId = request.params.user_id as number;
+                // console.log ("for user_id", userId);
+                const players = MatchManager.getInstance().players;
+                app.log.debug(`Fetching player with user_id: ${userId} `+ players.map(p => p.Player_id).join(", "));
+                if (players.length === 0) {
+                    reply.send({success: true, message: "Player found", data: -1} as IBasicResponse);
+                    return ;
+                    // throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "players not found")
+                }
+                const player = players.find(p => p.Player_id === userId);
+                if (!player) {
+                    reply.send({success: true, message: "Player found", data: -1} as IBasicResponse);
+                    return ;
+                    // throw new ApiError(ApiErrorCode.USER_NOT_FOUND, `Player with user_id ${userId} not found`);
+                }
+                // app.log.debug(`Fetching player with user_id: ${userId}`);
+                const match = MatchManager.getInstance().getMatchByPlayer_id(userId);
+                if (!match) {
+                    reply.send({success: true, message: "Player found", data: -1} as IBasicResponse);
+                    return ;
+                }
+                reply.send({success: true, message: "Player found", data: match.match_id} as IBasicResponse);
+            }
+        }
+    );
+
+
+
+
     fastify.get("/matches", {
             handler: (_request: FastifyRequest, reply: FastifyReply) => {
                 // return all matches
