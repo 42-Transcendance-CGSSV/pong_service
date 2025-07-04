@@ -1,7 +1,7 @@
-interface BallExportinfo {
+interface BallExportInfo {
     ballRadius: number;
     relativeBallX: number;
     relativeBallY: number;
 }
 
-export default BallExportinfo;
+export default BallExportInfo;

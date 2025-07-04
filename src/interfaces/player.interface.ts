@@ -1,15 +1,12 @@
-import {score_registry_interface} from "./score.registry.interface";
+import {ScoreRegistryInterface} from "./score.registry.interface";
 
 interface PlayerInterface {
-    Player_id        : number;
-    currentmatch_id  : number;
-    tainingData   : score_registry_interface | null;
-    PlayerName      : string;
-    PaddlePos       : number;
-    moveSpeed       : number;
+    playerId        : number;
+    currentMatchId  : number;
+    trainingData   : ScoreRegistryInterface | null;
+    paddlePos       : number;
     side            : number;
-    score   : number;
-    playerColor     : string;
+    score           : number;
     AI              : boolean;
     isTraining      : boolean;
 }

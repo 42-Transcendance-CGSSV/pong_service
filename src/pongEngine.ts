@@ -6,16 +6,13 @@ import {app} from "./app";
 import Match from "./classes/Match";*/
 
 
-class pongEngine {
-    private static instance: pongEngine | null = null;
+class PongEngine {
+    private static instance: PongEngine | null = null;
     private gameStatus?: NodeJS.Timeout;
     private lastUpdate: number = 0;
 
-    constructor() {
-    }
-
-    public static getInstance(): pongEngine {
-        if (this.instance === null) this.instance = new pongEngine();
+    public static getInstance(): PongEngine {
+        if (this.instance === null) this.instance = new PongEngine();
         return this.instance;
     }
 
@@ -28,7 +25,7 @@ class pongEngine {
             const currentTime = Date.now();
             const deltaTime = currentTime - this.lastUpdate;
             if (deltaTime >= env.UPDATE_INTERVAL_MS) {
-                for (const match of MatchManager.getInstance().matches) {
+                for (const match of MatchManager.getInstance().matches.values()) {
                     // if (!match.isRunning) : TODO: UNCOMENT
                     //     continue;
 
@@ -48,5 +45,5 @@ class pongEngine {
     }
 }
 
-export default pongEngine;
+export default PongEngine;
 // export let Engine = new pongEngine();

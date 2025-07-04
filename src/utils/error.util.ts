@@ -82,7 +82,7 @@ export const getHttpStatusCode = (errorCode: ApiErrorCode): number => {
     }
 };
 
-export class ApiError extends Error {
+export default class ApiError extends Error {
     public code: ApiErrorCode;
 
     public constructor(code: ApiErrorCode, message?: string) {

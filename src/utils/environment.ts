@@ -20,5 +20,7 @@ export const env = {
     PLAYER_MOVE_SPEED: Number(process.env.PLAYER_MOVE_SPEED) || 12,
     PLAYER_PADDLE_HEIGHT: Number(process.env.PLAYER_PADDLE_HEIGHT) || 80,
     PLAYER_PADDLE_WIDTH: Number(process.env.PLAYER_PADDLE_WIDTH) || 10,
+
+    BACKEND_TOKEN: process.env.BACKEND_TOKEN || "default_token",
 };
 

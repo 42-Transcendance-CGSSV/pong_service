@@ -1,6 +1,12 @@
-export interface IBasicResponse {
+interface IBasicResponse {
     success: boolean;
-    message?: string;
-    data?: any;
-    errorCode?: string;
+    message: string;
+}
+
+export interface ISuccessResponse extends IBasicResponse {
+    data: any;
+}
+
+export interface IErrorResponse extends IBasicResponse {
+    errorCode: string;
 }

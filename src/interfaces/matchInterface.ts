@@ -1,15 +1,15 @@
 import PlayerInterface from "./player.interface";
 import BallInterface from "./ball.interface";
 
-interface matchInterface {
-    match_id: number;
+interface MatchInterface {
+    matchId: number;
     players: PlayerInterface[];
     ball: BallInterface;
     scoreGoal: number;
     startedAt: number;
     pausedAt: number;
     endedAt: number;
-    winner_id: number;
+    winnerId: number;
 }
 
-export default matchInterface;
+export default MatchInterface;
