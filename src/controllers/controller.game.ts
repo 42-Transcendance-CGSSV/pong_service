@@ -3,7 +3,7 @@ import {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
 import MatchManager from "../managers/match.manager";
 import initPlayerSchemas from "../schemas/gen.player.schema";
 import schemas from "fluent-json-schema";
-import {startMatch} from "../services/match.service";
+import {getMatchById, startMatch} from "../services/match.service";
 import ApiError, {ApiErrorCode} from "../utils/error.util";
 import {ISuccessResponse} from "../interfaces/response.interface";
 import {toCamelCase} from "../utils/case.util";
@@ -49,6 +49,20 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
             }, 1000);
         }
     });
+
+    fastify.get("/match", {
+        schema: {body: schemas.object().prop("match_id", schemas.number().minimum(1).required())},
+            handler: (request: FastifyRequest, reply: FastifyReply) => {
+                const body = toCamelCase(request.body);
+                const matchId: number = body.matchId;
+                const match = getMatchById(matchId)
+                if (!match) throw new ApiError(ApiErrorCode.MATCH_NOT_FOUND, "Impossible de trouver un match avec cet ID");
+                reply.send({success: true, data: {players: match.players.map(p => p.playerId),
+                        scores:  match.players.map(p => p.score),
+                        is_paused: (match.isRunning && match.pausedAt !== -1)}} as ISuccessResponse);
+            }
+        }
+    );
 
     fastify.get("/matches", {
             handler: (_request: FastifyRequest, reply: FastifyReply) => {
