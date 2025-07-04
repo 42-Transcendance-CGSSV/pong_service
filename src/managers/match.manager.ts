@@ -2,40 +2,38 @@ import Match from "../classes/Match";
 import Player from "../classes/Player";
 import Ball from "../classes/Ball";
 import {app} from "../app";
+import WebsocketsManager from "./websockets.manager";
+import {ISuccessResponse} from "../interfaces/response.interface";
 
 export default class MatchManager {
 
     private static instance: MatchManager | null = null;
     public matches: Match[] = [];
     public players: Player[] = [];
-    public queue: Player[] = [];
-    public tournamentQueue: Player[] = [];
-    public TournamentMatches: Match[] = [];
     private matchCounter: number = 0;
 
-    public static getInstance(): MatchManager {
-        return this.instance ? this.instance : (this.instance = new MatchManager());
+    public constructor() {
+        setInterval(async () => {
+            for (const match of this.matches) {
+                if (!match.isRunning || match.isExpired()) continue;
+                for (const playersInMatch of match.getPlayersInMatch()) {
+                    const socket = WebsocketsManager.getInstance().getSocketFromUserId(playersInMatch.playerId);
+                    if (!socket) continue;
+                    socket.send(JSON.stringify({success: true, message: "Match found", data: match.exportRenderInfo(), errorCode: "200"} as ISuccessResponse))
+                }
+            }
+        }, 17)
     }
 
     public purgePlayer(player_id: number): void {
-        this.players = this.players.filter(player => player.Player_id !== player_id);
-        this.matches.forEach(match => {
-            match.players = match.players.filter(p => p.Player_id !== player_id);
-        });
+        this.players = this.players.filter(player => player.playerId !== player_id);
+        this.matches.forEach(match => match.players = match.players.filter(p => p.playerId !== player_id));
         return;
-        app.log.error("Player not found");
     }
 
-    public createMatch(scoreGoal: number, match_id: number): Match {
-        for (const match of this.matches) {
-            if (match.match_id === match_id) {
-                app.log.error("Match with this ID already exists");
-                return match;
-            }
-        }
-        let match = new Match(scoreGoal, match_id);
+    public createMatch(scoreGoal: number): Match {
+        let match = new Match(scoreGoal, MatchManager.getInstance().matchCounter++);
         this.matches.push(match);
-        this.matchCounter++;
         return match;
     }
 
@@ -49,7 +47,7 @@ export default class MatchManager {
         for (const match of this.matches) {
             if (match.match_id === match_id) {
                 for (const player of this.players) {
-                    if (player.Player_id === player_id) {
+                    if (player.playerId === player_id) {
                         if (match.players.length < 2 && !match.isRunning) {
                             return match.addPlayer(player);
                         } else {
@@ -65,7 +63,7 @@ export default class MatchManager {
 
     public playerExists(player_id: number): boolean {
         for (const player of this.players) {
-            if (player.Player_id === player_id) {
+            if (player.playerId === player_id) {
                 return true;
             }
         }
@@ -127,11 +125,11 @@ export default class MatchManager {
         return null;
     }
 
-    public getMatchByPlayer_id(Player_id: number): Match | null {
+    public getMatchByPlayerId(Player_id: number): Match | null {
         for (const match of this.matches) {
             if (!match)
                 continue;
-            if (match.players.find(player => player.Player_id === Player_id))
+            if (match.players.find(player => player.playerId === Player_id))
                 return match;
         }
         return null;
@@ -144,6 +142,10 @@ export default class MatchManager {
         if (!match.players)
             return null;
         return match.players;
+    }
+
+    public static getInstance(): MatchManager {
+        return this.instance ? this.instance : (this.instance = new MatchManager());
     }
 
 }

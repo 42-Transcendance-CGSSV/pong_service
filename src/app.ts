@@ -6,12 +6,16 @@ import {env} from "./utils/environment";
 
 import {pongController} from "./controllers/controller.game";
 import {registerGameListeners} from "./listeners/game.listeners";
-import pongEngine from "./pongEngine";
-import {registerSocketCoreListeners} from "./listeners/core.listeners";
-import {ApiError} from "./utils/error.util";
-import {IBasicResponse} from "./interfaces/response.interface";
-import {Matchmaking} from "./classes/Matchmaking";
-// import { matchmaking } from "./classes/Matchmaking";
+import PongEngine from "./pongEngine";
+import ApiError from "./utils/error.util";
+import {IErrorResponse} from "./interfaces/response.interface";
+import {websocketRegistry} from "./websockets/websocket.registry";
+import {registerGetIaNeededData} from "./websockets/channels/getIANeededData";
+import {registerGetPlayerDataChannel} from "./websockets/channels/getPlayerDataChannel";
+import {registerGetScoreRegistry} from "./websockets/channels/getScoreRegistryChannel";
+import {registerMovePaddleChannel} from "./websockets/channels/movePaddleChannel";
+import {registerTogglePauseMatchChannel} from "./websockets/channels/togglePauseChannel";
+import AuthenticationMiddleware from "./middlewares/authentication.middleware";
 
 export const app = fastify({
     logger: {
@@ -46,18 +50,25 @@ export const app = fastify({
 });
 export const eventEmitter = new EventEmitter();
 
-function start(): void {
+async function start(): Promise<void> {
     try {
-        // matchmaking
-        // Engine.startGameLoop();
         app.register(websockets);
 
-        pongEngine.getInstance().startGameLoop();
-        Matchmaking.getInstance();
+        app.log.info("Setup websocket processor...");
+        await websocketRegistry(app);
+        registerGetIaNeededData();
+        registerGetPlayerDataChannel();
+        registerGetScoreRegistry();
+        registerMovePaddleChannel();
+        registerTogglePauseMatchChannel();
+        app.log.info("Websocket processor is OK !");
+
+        new AuthenticationMiddleware().register(app);
+
+        PongEngine.getInstance().startGameLoop();
 
         app.register(pongController);
 
-        registerSocketCoreListeners(app);
         registerGameListeners(app);
 
         app.setErrorHandler((error, _request, reply) => {
@@ -66,7 +77,7 @@ function start(): void {
                     success: false,
                     errorCode: error.code,
                     message: error.message
-                } as IBasicResponse);
+                } as IErrorResponse);
                 return;
             }
 
@@ -75,10 +86,10 @@ function start(): void {
                 success: false,
                 message: error.message,
                 errorCode: error.code || "INTERNAL_SERVER_ERROR"
-            } as IBasicResponse);
+            } as IErrorResponse);
         });
 
-        app.listen({port: 3001, host: "0.0.0.0"});
+        await app.listen({port: 3001, host: "0.0.0.0"});
     } catch (error) {
         app.log.error(error);
         process.exit(1);
@@ -89,20 +100,4 @@ app.get("/healthcheck", (_req, response) => {
     response.send({message: "Success"});
 });
 
-start();
-
-
-/*eventEmitter.on("ws-message", (data: any, socket: WebSocket) => {
-    if (data instanceof Error) {
-        app.log.error(`WebSocket error: ${data.message}`);
-        socket.send(JSON.stringify({error: data.message}));
-    } else {
-        if (data && typeof data === "object" && data instanceof WsEvent) {
-            app.log.info(`WebSocket message received on channel: ${data.getChannel()}`);
-            if (data.getData()) {
-                console.log("data", data.getDataAsObject()["user-id"]);
-            }
-        }
-        socket.send(JSON.stringify({message: "Message received", data}));
-    }
-});*/
+start().then(() => app.log.info("Pong service started"));

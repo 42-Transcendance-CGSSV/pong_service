@@ -187,7 +187,7 @@ class Ball implements BallInterface {
 
             if (this.lastToHit) {
                 this.lastToHit.score++;
-                app.log.debug(`player ${this.lastToHit.PlayerName} scored :${this.lastToHit.score}`);
+                app.log.debug(`player ${this.lastToHit.playerName} scored :${this.lastToHit.score}`);
                 this.lastToHit = undefined;
             }
             if (TRAINING_MODE) {

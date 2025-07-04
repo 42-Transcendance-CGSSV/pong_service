@@ -1,60 +1,15 @@
 import {app, eventEmitter} from "../app";
 import {FastifyInstance} from "fastify";
 import {
-    getAiNeeds,
     getMatchById,
     getMatchData,
-    getPlayerData,
-    movePaddle,
-    togglePauseMatch
 } from "../services/match.service";
 import Match from "../classes/Match";
 
 import {clearInterval} from "timers";
-import {env} from "../utils/environment";
-import {SendAllowed} from "../classes/Ball";
 import type { WebSocket } from "ws";
-// import { SendAllowed } from "../classes/Ball";
-// import {env} from "../utils/environment";
-// import {env} from "../utils/environment";
-// import {log} from "node:util";
-// import {ApiError, ApiErrorCode} from "../utils/error.util";
 
 export function registerGameListeners(_app: FastifyInstance): void {
-
-    eventEmitter.on("ws-message:move-paddle", (data: any, socket: WebSocket) => {
-        if (data && typeof data === "object") {
-            if (typeof data["user_id"] === "number") {
-                if (data["direction"] && (data["direction"] === "up" || data["direction"] === "down")) {
-
-                    socket.send(JSON.stringify(movePaddle(data["user_id"], data["direction"])));
-                } else {
-                    socket.send(JSON.stringify({success: false, message: "Invalid direction"}));
-                    // throw new ApiError(ApiErrorCode.INVALID_REQUEST_BODY, "Invalid direction");
-                }
-            } else {
-                socket.send(JSON.stringify({success: false, message: "Missing user_id"}));
-                // throw new ApiError(ApiErrorCode.INVALID_REQUEST_BODY, "Missing user_id");
-            }
-        } else {
-            socket.send(JSON.stringify({success: false, message: "Invalid data format"}));
-            // throw new ApiError(ApiErrorCode.INVALID_REQUEST_BODY, "Invalid data format");
-        }
-    });
-
-    eventEmitter.on("ws-message:get-player-data", (data: any, socket: WebSocket) => {
-        if (data && typeof data === "object") {
-            if (typeof data["user_id"] === "number") {
-                socket.send(JSON.stringify(getPlayerData(data["user_id"])));
-            } else {
-                socket.send(JSON.stringify({success: false, message: "Missing user_id"}));
-                // throw new ApiError(ApiErrorCode.INVALID_REQUEST_BODY, "Missing user_id");
-            }
-        } else {
-            socket.send(JSON.stringify({success: false, message: "Invalid data format"}));
-            // throw new ApiError(ApiErrorCode.INVALID_REQUEST_BODY, "Invalid data format");
-        }
-    });
 
     const matchIntervalManager: Map<number, NodeJS.Timeout> = new Map();
     eventEmitter.on("ws-message:get-match-data", (data: any, socket: WebSocket) => {
@@ -101,82 +56,4 @@ export function registerGameListeners(_app: FastifyInstance): void {
             resolve();
         })
     }
-
-
-    let intervalManager: NodeJS.Timeout
-    eventEmitter.on("ws-message:get-ia-needs-data", (data: any, socket: WebSocket) => {
-
-        if (data && typeof data === "object") {
-            if (intervalManager) {
-                clearInterval(intervalManager);
-                app.log.info("Cleared interval for ai needs data");
-            }
-            intervalManager = setInterval(async () => {
-                // if (SendAllowed.get()){
-                await SendAiNeedsView(socket);
-                //     app.log.info("Sent ai needs data");
-                //     SendAllowed.set(false);
-                // }
-            }, 1000 / env.TIME_MULTIPLIER);
-
-        } else {
-            socket.send(JSON.stringify({success: false, message: "Invalid data format"}));
-            // throw new ApiError(ApiErrorCode.INVALID_REQUEST_BODY, "Invalid data format");
-        }
-    })
-
-    function SendAiNeedsView(socket: WebSocket): Promise<void> {
-        // app.log.info("SendAiNeedsView", match_id)
-        return new Promise((resolve, reject) => {
-            let payload: string = JSON.stringify(getAiNeeds())
-            if (!payload)
-                return reject(() => app.log.info("Error: No payload to send"));
-
-            // app.log.info("payload", payload)
-            socket.send(payload)
-            resolve();
-        })
-    }
-
-    function SendRegistry(socket: WebSocket): Promise<void> {
-        // app.log.info("SendAiNeedsView", match_id)
-        return new Promise((resolve, reject) => {
-            let payload: string = JSON.stringify(SendAllowed.get())
-            if (!payload || payload === "[]" || payload === null || payload === "null")
-                return reject(() => app.log.info("Error: No payload to send"));
-            if (payload) {
-                app.log.info("YESSSSSSSSSSSSSSSSS: ", payload)
-            }
-            // app.log.info("registry:   ", payload)
-            socket.send(payload)
-            resolve();
-        })
-    }
-
-
-    eventEmitter.on("ws-message:get-score-registry", (data: any, socket: WebSocket) => {
-
-        if (data && typeof data === "object") {
-            SendRegistry(socket).catch(() => {
-            })
-        } else {
-            socket.send(JSON.stringify({success: false, message: "Invalid data format"}));
-            // throw new ApiError(ApiErrorCode.INVALID_REQUEST_BODY, "Invalid data format");
-        }
-    })
-
-    eventEmitter.on("ws-message:toggle-pause-match", (data: any, socket: WebSocket) => {
-        if (data && typeof data === "object") {
-            if (typeof data["match_id"] === "number") {
-                // socket.send(JSON.stringify({success: true, message: "Match pause is being toggled"}));
-                socket.send(JSON.stringify(togglePauseMatch(data["match_id"])));
-            } else {
-                socket.send(JSON.stringify({success: false, message: "Missing match_id"}));
-                // throw new ApiError(ApiErrorCode.INVALID_REQUEST_BODY, "Missing match_id");
-            }
-        } else {
-            socket.send(JSON.stringify({success: false, message: "Invalid data format"}));
-            // throw new ApiError(ApiErrorCode.INVALID_REQUEST_BODY, "Invalid data format");
-        }
-    })
 }

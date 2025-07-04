@@ -1,4 +1,4 @@
-export interface score_registry_interface{
+export interface ScoreRegistryInterface {
     side: number;
     player_id:number;
     withPosition: number;

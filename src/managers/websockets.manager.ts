@@ -1,56 +1,71 @@
-type PlayerSocket = {
-    socket: WebSocket;
-    Player_id?: number;
-}
+import type { WebSocket } from "ws";
+import {setInterval} from "node:timers";
+import {app} from "../app";
+
 
 export default class WebsocketsManager {
-
-    public readonly connections: Set<PlayerSocket> = new Set();
     private static instance: WebsocketsManager | null = null;
 
-    public addConnection(socket: WebSocket): void {
-        this.connections.add({socket, Player_id: undefined} as PlayerSocket);
+    private socketToUserId: Map<WebSocket, number> = new Map();
+    private userIdToSocket: Map<number, WebSocket> = new Map();
+    private pingTask: NodeJS.Timeout | null = null;
+
+    public constructor() {
+        this.pingTask = setInterval(() => {
+            for (const socket of this.socketToUserId.keys()) {
+                try {
+                    socket.ping();
+                }
+                catch (error) {
+                    app.log.error("Unable to send ping to the user ", this.socketToUserId.get(socket));
+                    app.log.error(error);
+                }
+            }
+        })
+    }
+
+    public addConnection(socket: WebSocket, userId: number): boolean {
+        if (this.userIdToSocket.has(userId) || this.socketToUserId.has(socket)) return false;
+        this.socketToUserId.set(socket, userId);
+        this.userIdToSocket.set(userId, socket);
+        return true;
     }
 
     public removeConnection(socket: WebSocket): void {
-        this.connections.delete({socket, Player_id: undefined} as PlayerSocket);
+        const userId = this.socketToUserId.get(socket);
+        if (userId !== undefined) {
+            this.socketToUserId.delete(socket);
+            this.userIdToSocket.delete(userId);
+        }
     }
 
-    public updateIdentity(socket: WebSocket, Player_id: number): boolean {
-        for (const con of this.connections) {
-            if (con.socket === socket) {
-                con.Player_id = Player_id;
-                return true;
-            }
-        }
-        return false;
+    public getUserIdFromSocket(socket: WebSocket): number | null {
+        return this.socketToUserId.get(socket) ?? null;
     }
 
-    public removeConnectionFromId(Player_id: number): boolean {
-        for (const playerSocket of this.connections) {
-            if (playerSocket.Player_id === Player_id) {
-                this.connections.delete(playerSocket);
-                return true;
-            }
-        }
-        return false;
+    public getSocketFromUserId(userId: number): WebSocket | null {
+        return this.userIdToSocket.get(userId) ?? null;
     }
 
     public countConnections(): number {
-        return this.connections.size;
+        return this.socketToUserId.size;
     }
 
     public flushConnections(): void {
-        this.connections.forEach(socket => {
-            if (socket.socket.OPEN) {
-                socket.socket.close(1234, "Server is shutting down"); //TODO use a proper close code
+        if (this.pingTask) {
+            this.pingTask.close();
+            this.pingTask = null;
+        }
+        for (const [socket] of this.socketToUserId) {
+            if ((socket as any).OPEN) {
+                socket.close(1234, "Server is shutting down");
             }
-        });
-        this.connections.clear();
+        }
+        this.socketToUserId.clear();
+        this.userIdToSocket.clear();
     }
 
     public static getInstance(): WebsocketsManager {
         return this.instance ? this.instance : (this.instance = new WebsocketsManager());
     }
-
 }

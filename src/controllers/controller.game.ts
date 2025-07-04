@@ -1,78 +1,31 @@
-import {app, eventEmitter} from "../app"
+import {app} from "../app"
 import {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
 
-import WsEvent from "../classes/WsEvent";
 import MatchManager from "../managers/match.manager";
-import {IBasicResponse} from "../interfaces/response.interface";
 import initPlayerSchemas from "../schemas/gen.player.schema";
 import schemas from "fluent-json-schema";
 import {startMatch} from "../services/match.service";
-import {ApiError, ApiErrorCode} from "../utils/error.util";
-import {fullPurgePlayers} from "../classes/Matchmaking";
+import ApiError, {ApiErrorCode} from "../utils/error.util";
+import {ISuccessResponse} from "../interfaces/response.interface";
 
 
 export function pongController(fastify: FastifyInstance, _options: any, done: () => void) {
 
-    fastify.register(async function (fastify) {
-        fastify.get('/pong-ws', {websocket: true},
-            (connection, _req) => {
-                const socket = connection;
-
-                eventEmitter.emit("ws-opened", socket);
-
-                //TODO: clear on close
-                setInterval(() => {
-                    if (socket.readyState === socket.OPEN) {
-                        socket.ping();
-                    }
-                }, 10000);
-
-                socket.on('message', (message: Buffer) => {
-                    try {
-                        const data: unknown = JSON.parse(message.toString());
-
-                        if (data && typeof data === 'object' && 'channel' in data) {
-                            const receivedData: unknown | undefined = 'data' in data ? data.data : undefined;
-                            if (data.channel === "identify" && receivedData && typeof receivedData === "object" && "user_id" in receivedData) {
-                                eventEmitter.emit("ws-identify", receivedData, socket);
-                                return;
-                            }
-                            eventEmitter.emit("ws-message", new WsEvent(data.channel as string, receivedData), socket);
-                            eventEmitter.emit("ws-message:" + data.channel, receivedData, socket);
-
-                        }
-
-                    } catch (error) {
-                        eventEmitter.emit("ws-json-error", error, socket);
-                    }
-                });
-
-                socket.on('close', () => {
-                    eventEmitter.emit("ws-closed", socket);
-                });
-
-                socket.on('error', (error: Error) => {
-                    eventEmitter.emit("ws-error", error, socket);
-                });
-            });
-    });
-
     fastify.put("/match/create", { // TODO: can be removed
         schema: {
             body: schemas.object().prop("scoreGoal", schemas.number().minimum(1).required())
-                .prop("match_id", schemas.number().minimum(1).required())
         },
         handler: async (request: FastifyRequest, reply: FastifyReply) => {
             const body = request.body as { scoreGoal: number; match_id: number };
-            const match = MatchManager.getInstance().createMatch(body.scoreGoal, body.match_id);
-            reply.send({success: true, message: "The match has been created", data: match} as IBasicResponse);
+            const match = MatchManager.getInstance().createMatch(body.scoreGoal);
+            reply.send({success: true, message: "The match has been created", data: match} as ISuccessResponse);
         }
     });
     fastify.get("/players", { // TODO: Can be removed
             handler: (_request: FastifyRequest, reply: FastifyReply) => {
                 // return all players in all matches
                 const players = MatchManager.getInstance().players;
-                reply.send({success: true, message: "Players ", data: players} as IBasicResponse);
+                reply.send({success: true, message: "Players ", data: players} as ISuccessResponse);
             }
         }
     );
@@ -89,11 +42,11 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
                 if (players.length === 0) {
                     throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "players not found")
                 }
-                const player = players.find(p => p.Player_id === userId);
+                const player = players.find(p => p.playerId === userId);
                 if (!player) {
                     throw new ApiError(ApiErrorCode.USER_NOT_FOUND, `Player with user_id ${userId} not found`);
                 }
-                reply.send({success: true, message: "Player found", data: player} as IBasicResponse);
+                reply.send({success: true, message: "Player found", data: player} as ISuccessResponse);
             }
         }
     );
@@ -112,28 +65,19 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
                 if (players.length === 0) {
                     throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "players not found")
                 }
-                const player = players.find(p => p.Player_id === userId);
+                const player = players.find(p => p.playerId === userId);
                 if (!player) {
                     throw new ApiError(ApiErrorCode.USER_NOT_FOUND, `Player with user_id ${userId} not found`);
                 }
-                const match = MatchManager.getInstance().getMatchByPlayer_id(userId);
+                const match = MatchManager.getInstance().getMatchByPlayerId(userId);
                 if (!match) {
                     throw new ApiError(ApiErrorCode.MATCH_NOT_FOUND, `Match for player with user_id ${userId} not found`);
                 }
                 app.log.debug(`//////////////////////////////////////////////////////Match found for user_id ${userId}: ${match.match_id}`);
-                reply.send({success: true, message: "Player found", data: match.match_id} as IBasicResponse);
+                reply.send({success: true, message: "Player found", data: match.match_id} as ISuccessResponse);
             }
         }
     );
-
-
-
-
-
-
-
-
-
 
     fastify.get("/matches", {
             handler: (_request: FastifyRequest, reply: FastifyReply) => {
@@ -143,7 +87,7 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
                     // reply.send({success: false, message: "No matches found"} as IBasicResponse);
                     throw new ApiError(ApiErrorCode.RESOURCE_NOT_FOUND, "match not found")
                 }
-                reply.send({success: true, message: "Matches ", data: matches} as IBasicResponse);
+                reply.send({success: true, message: "Matches ", data: matches} as ISuccessResponse);
             }
         }
     );
@@ -169,7 +113,7 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
                 success: true,
                 message: "player initialized",
                 data: MatchManager.getInstance().players
-            } as IBasicResponse);
+            } as ISuccessResponse);
         }
     });
 
@@ -186,22 +130,22 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
                 success: true,
                 message: "player initialized",
                 data: MatchManager.getInstance().players
-            } as IBasicResponse);
+            } as ISuccessResponse);
         }
     });
 
 
+    //TODO: refactor to avoid id spoofing
     fastify.put("/kick", {
         schema: {body: schemas.object().prop("user_id", schemas.number().minimum(0).required())},
         handler: async (request: FastifyRequest, reply: FastifyReply) => {
             const p = request.body as { user_id: number };
             if (!MatchManager.getInstance().playerExists(p.user_id)) throw new ApiError(ApiErrorCode.USER_NOT_FOUND, `Player ${p.user_id} does not exist`)
             MatchManager.getInstance().purgePlayer(p.user_id);
-            fullPurgePlayers(p.user_id);
             reply.send({
                 success: true,
                 message: "player purged",
-            } as IBasicResponse);
+            } as ISuccessResponse);
         }
     });
 
@@ -212,12 +156,12 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
             if (!(request.params && typeof request.params === "object" && "user_id" in request.params))
                 throw new Error("Invalid request");
             const userId = request.params.user_id as number;
-            const match = MatchManager.getInstance().getMatchByPlayer_id(userId);
+            const match = MatchManager.getInstance().getMatchByPlayerId(userId);
             if (!match) throw new Error("Match not found for this user");
             const player = match.getPlayerById(userId);
             if (!player) throw new Error("Player not found in this match");
             player.ready = true;
-            reply.send({success: true, message: "Player is ready", data: player} as IBasicResponse);
+            reply.send({success: true, message: "Player is ready", data: player} as ISuccessResponse);
         }
     });
 
@@ -234,7 +178,7 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
                 if (isReady) {
                     startMatch(match);
                 }
-                reply.send({success: true, message: "Match started", data: match} as IBasicResponse);
+                reply.send({success: true, message: "Match started", data: match} as ISuccessResponse);
             }
         }
     );
