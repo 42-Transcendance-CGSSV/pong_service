@@ -31,13 +31,14 @@ export default class WebsocketsManager {
         return true;
     }
 
-    public removeConnection(socket: WebSocket): void {
+    public removeConnection(socket: WebSocket): number {
         const userId = this.socketToUserId.get(socket);
         if (userId !== undefined) {
             this.socketToUserId.delete(socket);
             this.userIdToSocket.delete(userId);
         }
         if ((socket as any).OPEN) socket.close(1234, "Pong has closed your socket");
+        return userId ? userId : -1;
     }
 
     public getUserIdFromSocket(socket: WebSocket): number | null {

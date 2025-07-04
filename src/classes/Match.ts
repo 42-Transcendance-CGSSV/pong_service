@@ -5,6 +5,7 @@ import {ScoreRegistryInterface} from "../interfaces/score.registry.interface";
 import {app} from "../app";
 import MatchManager from "../managers/match.manager";
 import {endMatch} from "../services/match.service";
+import WebsocketsManager from "../managers/websockets.manager";
 
 export interface AiNeeds {
     playerID: number,
@@ -62,6 +63,18 @@ class Match implements MatchInterface {
 
     public getPlayersInMatch(): Player[] {
         return this.players;
+    }
+
+    public getOnlinePlayerInMatch(): Player[]
+    {
+        const players: Player[] = [];
+        for (const player of this.players) {
+            const socket =  WebsocketsManager.getInstance().getSocketFromUserId(player.playerId);
+            if (socket && !socket.isPaused &&  socket.readyState !== socket.CLOSED && socket.readyState !== socket.CLOSING)
+                continue;
+            players.push(player);
+        }
+        return players;
     }
 
     public playerIsInMatch(player: Player): boolean {

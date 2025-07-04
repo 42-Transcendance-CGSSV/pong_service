@@ -3,6 +3,7 @@ import Player from "../classes/Player";
 import Ball from "../classes/Ball";
 import WebsocketsManager from "./websockets.manager";
 import {ISuccessResponse} from "../interfaces/response.interface";
+import {endMatch} from "../services/match.service";
 
 export default class MatchManager {
 
@@ -16,7 +17,11 @@ export default class MatchManager {
                 if (!match.isRunning || match.isExpired()) continue;
                 for (const playersInMatch of match.getPlayersInMatch()) {
                     const socket = WebsocketsManager.getInstance().getSocketFromUserId(playersInMatch.playerId);
-                    if (!socket) continue;
+                    if (!socket) {
+                        match.winnerId = match.getOnlinePlayerInMatch().pop()!.getID();
+                        endMatch(match);
+                        continue;
+                    }
                     socket.send(JSON.stringify({success: true, message: "Match found", data: match.exportRenderInfo(), errorCode: "200"} as ISuccessResponse))
                 }
             }
