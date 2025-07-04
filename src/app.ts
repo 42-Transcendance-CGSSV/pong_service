@@ -5,7 +5,6 @@ import {EventEmitter} from "events"
 import {env} from "./utils/environment";
 
 import {pongController} from "./controllers/controller.game";
-import {registerGameListeners} from "./listeners/game.listeners";
 import PongEngine from "./pongEngine";
 import ApiError from "./utils/error.util";
 import {IErrorResponse} from "./interfaces/response.interface";
@@ -68,8 +67,6 @@ async function start(): Promise<void> {
         PongEngine.getInstance().startGameLoop();
 
         app.register(pongController);
-
-        registerGameListeners(app);
 
         app.setErrorHandler((error, _request, reply) => {
             if (error.name === "ApiError") {

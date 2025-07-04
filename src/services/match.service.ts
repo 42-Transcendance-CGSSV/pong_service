@@ -13,7 +13,7 @@ export function getMatchData(match_id: number): ISuccessResponse | IErrorRespons
 }
 
 export function getAiNeeds(): AiNeeds[] | null {
-    const match: Match[] = MatchManager.getInstance().matches
+    const match: Match[] = Array.from(MatchManager.getInstance().matches.values())
     const payload: AiNeeds[] = [];
     if (!match) return null
     match.forEach((m) => {
@@ -26,7 +26,7 @@ export function getAiNeeds(): AiNeeds[] | null {
 }
 
 export function gettainingData(): ScoreRegistryInterface[] | null {
-    const match: Match[] = MatchManager.getInstance().matches
+    const match: Match[] = Array.from(MatchManager.getInstance().matches.values())
     const payload: ScoreRegistryInterface[] = [];
     if (!match) return null
     match.forEach((m) => {
@@ -78,20 +78,19 @@ export function startMatch(match: Match): ISuccessResponse {
     match.startedAt = Date.now();
     match.isRunning = true;
 
-    const message = "Game " + match.match_id + " started";
+    const message = "Game " + match.matchId + " started";
 
     app.log.debug(message)
     return {success: true, message: message} as ISuccessResponse;
 }
 
-export function endMatch(match_id: number): ISuccessResponse | IErrorResponse {
-    const match = MatchManager.getInstance().getMatchById(match_id);
+export function endMatch(match: Match): ISuccessResponse | IErrorResponse {
     if (!match) return {success: false, message: "match does not exist !", errorCode: "404"} as IErrorResponse;
 
     match.startedAt = -1;
     match.isRunning = false;
 
-    const message = "Game " + match_id + " ended";
+    const message = "Game " + match.matchId + " ended";
 
     app.log.debug(message)
     //TODO: send stats to sami

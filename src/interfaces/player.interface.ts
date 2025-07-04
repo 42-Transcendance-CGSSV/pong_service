@@ -3,13 +3,10 @@ import {ScoreRegistryInterface} from "./score.registry.interface";
 interface PlayerInterface {
     playerId        : number;
     currentMatchId  : number;
-    tainingData   : ScoreRegistryInterface | null;
-    playerName      : string;
-    PaddlePos       : number;
-    moveSpeed       : number;
+    trainingData   : ScoreRegistryInterface | null;
+    paddlePos       : number;
     side            : number;
-    score   : number;
-    playerColor     : string;
+    score           : number;
     AI              : boolean;
     isTraining      : boolean;
 }

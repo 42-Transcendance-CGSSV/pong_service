@@ -25,7 +25,7 @@ class PongEngine {
             const currentTime = Date.now();
             const deltaTime = currentTime - this.lastUpdate;
             if (deltaTime >= env.UPDATE_INTERVAL_MS) {
-                for (const match of MatchManager.getInstance().matches) {
+                for (const match of MatchManager.getInstance().matches.values()) {
                     // if (!match.isRunning) : TODO: UNCOMENT
                     //     continue;
 

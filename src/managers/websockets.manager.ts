@@ -37,6 +37,7 @@ export default class WebsocketsManager {
             this.socketToUserId.delete(socket);
             this.userIdToSocket.delete(userId);
         }
+        if ((socket as any).OPEN) socket.close(1234, "Pong has closed your socket");
     }
 
     public getUserIdFromSocket(socket: WebSocket): number | null {
