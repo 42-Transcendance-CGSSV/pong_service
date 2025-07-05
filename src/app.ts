@@ -1,5 +1,4 @@
 import fastify from "fastify";
-import websockets from '@fastify/websocket'
 
 import {EventEmitter} from "events"
 import {env} from "./utils/environment";
@@ -15,6 +14,8 @@ import {registerGetScoreRegistry} from "./websockets/channels/getScoreRegistryCh
 import {registerMovePaddleChannel} from "./websockets/channels/movePaddleChannel";
 import {registerTogglePauseMatchChannel} from "./websockets/channels/togglePauseChannel";
 import AuthenticationMiddleware from "./middlewares/authentication.middleware";
+import fastifyCookie from "@fastify/cookie";
+import fastifyWebsocket from "@fastify/websocket";
 
 export const app = fastify({
     logger: {
@@ -51,7 +52,8 @@ export const eventEmitter = new EventEmitter();
 
 async function start(): Promise<void> {
     try {
-        app.register(websockets);
+        app.register(fastifyWebsocket);
+        app.register(fastifyCookie);
 
         app.log.info("Setup websocket processor...");
         await websocketRegistry(app);
