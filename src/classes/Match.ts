@@ -25,9 +25,9 @@ class Match implements MatchInterface {
 	public readonly ball: Ball;
 	public players: Player[] = [];
 	public readonly scoreGoal: number;
-	public startedAt: number;
+	public startedAt: number = -1;
 	public pausedAt: number = -1;
-	public endedAt: number;
+	public endedAt: number = -1;
 	public winnerId: number = -1;
 
 	public interval: NodeJS.Timeout | null = null;
@@ -36,9 +36,6 @@ class Match implements MatchInterface {
 		this.matchId = ++MatchManager.getInstance().matchCounter;
 		this.scoreGoal = scoreGoal;
 		this.ball = new Ball();
-		this.startedAt = -1;
-		this.endedAt = -1;
-		this.winnerId = -1;
 	}
 
 
@@ -82,11 +79,6 @@ class Match implements MatchInterface {
 
 	public getPlayerById(Player_id: number): Player | undefined {
 		return this.players.find(player => player.playerId === Player_id);
-	}
-
-
-	public isExpired(): boolean {
-		return this.startedAt + 60 * 60000 > Date.now();
 	}
 
 	public isSameBall(ball: Ball): boolean {

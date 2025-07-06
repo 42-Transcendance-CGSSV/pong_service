@@ -43,7 +43,7 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
 				data: toSnakeCase(match)
 			} as ISuccessResponse);
 
-			let delay = 20;
+			let delay = 10;
 			const timer = setInterval(() => {
 				const isReady = match.getPlayersInMatch().every(p => p.ready);
 				if (isReady || delay-- <= 0) {
