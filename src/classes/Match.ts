@@ -20,24 +20,28 @@ export interface AiNeeds {
 }
 
 class Match implements MatchInterface {
-	public isRunning: boolean = false;
+	public isRunning: boolean;
 	public readonly matchId: number;
 	public readonly ball: Ball;
-	public players: Player[] = [];
+	public players: Player[];
 	public readonly scoreGoal: number;
-	public startedAt: number = -1;
-	public pausedAt: number = -1;
-	public endedAt: number = -1;
-	public winnerId: number = -1;
+	public startedAt: number;
+	public pausedAt: number;
+	public endedAt: number;
+	public winnerId: number;
 
 	public interval: NodeJS.Timeout | null = null;
 
 	public constructor(scoreGoal: number) {
 		this.matchId = ++MatchManager.getInstance().matchCounter;
 		this.scoreGoal = scoreGoal;
+		this.players = [];
 		this.ball = new Ball();
 		this.isRunning = false;
 		this.startedAt = -1;
+		this.pausedAt = -1;
+		this.endedAt = -1;
+		this.winnerId = -1;
 	}
 
 

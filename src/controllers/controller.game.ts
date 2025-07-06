@@ -76,7 +76,15 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
 						}))
 					})
 					if (delay === 0) {
-						startMatch(match);
+						const response = startMatch(match);
+						players.forEach((player: Player) => {
+							const playerSocket = WebsocketsManager.getInstance().getSocketFromUserId(player.playerId);
+							if (!playerSocket) return;
+							playerSocket.send(JSON.stringify({
+								channel: "game-started",
+								data: {is_started: response.success}
+							}))
+						})
 						timer.close();
 						return;
 					}

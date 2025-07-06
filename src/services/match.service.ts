@@ -79,7 +79,14 @@ export function togglePauseMatch(match_id: number): ISuccessResponse | IErrorRes
 	return {success: true, message: message} as ISuccessResponse;
 }
 
-export function startMatch(match: Match): ISuccessResponse {
+export function startMatch(match: Match): ISuccessResponse | IErrorResponse {
+
+	if (match.getOnlinePlayerInMatch().length !== 2) return {
+		success: false,
+		message: "Not enough players",
+		errorCode: "404"
+	} as IErrorResponse;
+
 	match.startedAt = Date.now();
 	match.isRunning = true;
 
