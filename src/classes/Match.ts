@@ -36,6 +36,8 @@ class Match implements MatchInterface {
 		this.matchId = ++MatchManager.getInstance().matchCounter;
 		this.scoreGoal = scoreGoal;
 		this.ball = new Ball();
+		this.isRunning = false;
+		this.startedAt = -1;
 	}
 
 
@@ -54,8 +56,8 @@ class Match implements MatchInterface {
 
 	public addPlayer(Player: Player): boolean {
 		Player.currentMatchId = this.matchId;
-		const check = this.players.length;
-		return this.players.push(Player) === check + 1;
+		this.players.push(Player);
+		return this.players.includes(Player, 0);
 	}
 
 	public getPlayersInMatch(): Player[] {
@@ -66,7 +68,7 @@ class Match implements MatchInterface {
 		const players: Player[] = [];
 		for (const player of this.players) {
 			const socket = WebsocketsManager.getInstance().getSocketFromUserId(player.playerId);
-			if (socket && !socket.isPaused && socket.readyState !== socket.CLOSED && socket.readyState !== socket.CLOSING)
+			if (socket && (socket.isPaused || socket.readyState !== socket.OPEN))
 				continue;
 			players.push(player);
 		}

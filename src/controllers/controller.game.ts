@@ -10,6 +10,8 @@ import {toCamelCase, toSnakeCase} from "../utils/case.util";
 import {env} from "../utils/environment";
 import WebsocketsManager from "../managers/websockets.manager";
 import {setInterval} from "node:timers";
+import Player from "../classes/Player";
+import {app} from "../app";
 
 
 export function pongController(fastify: FastifyInstance, _options: any, done: () => void) {
@@ -43,13 +45,44 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
 				data: toSnakeCase(match)
 			} as ISuccessResponse);
 
-			let delay = 10;
+			let delay = 35;
 			const timer = setInterval(() => {
-				const isReady = match.getPlayersInMatch().every(p => p.ready);
-				if (isReady || delay-- <= 0) {
-					startMatch(match);
-					timer.close();
+				const players: Player[] = match.getOnlinePlayerInMatch();
+				if (players.length < 2) {
+					app.log.info(`Match ${match.matchId} has ${players.length} players in match. ALT : ${match.getPlayersInMatch().length}`);
+					return;
 				}
+				const isReady = players.every(p => p.ready);
+
+				app.log.info(`Match ${match.matchId} waiting for ${delay} seconds`);
+				app.log.info(`Match ${match.matchId} is ready: ${isReady} with players: ${players.length}`);
+				app.log.info(`Player 1: ${players[0].playerId} is ready: ${players[0].ready}`);
+				app.log.info(`Player 2: ${players[1].playerId} is ready: ${players[1].ready}`);
+
+				if (isReady && delay >= 6) {
+					delay = 5;
+					return;
+				}
+
+				delay--;
+
+				if (delay >= 0) {
+					players.forEach((player: Player) => {
+						const playerSocket = WebsocketsManager.getInstance().getSocketFromUserId(player.playerId);
+						if (!playerSocket) return;
+						playerSocket.send(JSON.stringify({
+							channel: "waiting-start",
+							data: {time_remaining: delay}
+						}))
+					})
+					if (delay === 0) {
+						startMatch(match);
+						timer.close();
+						return;
+					}
+				}
+
+
 			}, 1000);
 		}
 	});

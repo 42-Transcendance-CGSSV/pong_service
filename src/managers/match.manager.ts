@@ -14,7 +14,12 @@ export default class MatchManager {
 	public constructor() {
 		setInterval(async () => {
 			for (const match of this.matches.values()) {
-				if (!match.isRunning) continue;
+				if (!match.isRunning) {
+					console.log(`Match ${match.matchId} is not running !`);
+					continue;
+				}
+				console.log(`Match ${match.matchId} is running !`);
+				console.log(`Players in match : ${match.getPlayersInMatch().length}`);
 				for (const playersInMatch of match.getPlayersInMatch()) {
 					const socket = WebsocketsManager.getInstance().getSocketFromUserId(playersInMatch.playerId);
 					if (!socket) {
@@ -24,7 +29,7 @@ export default class MatchManager {
 					}
 					socket.send(JSON.stringify({
 						success: true,
-						message: "Match found",
+						message: "",
 						data: match.exportRenderInfo(),
 						errorCode: "200"
 					} as ISuccessResponse))
