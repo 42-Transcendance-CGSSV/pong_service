@@ -1,86 +1,90 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
 
 import MatchManager from "../managers/match.manager";
 import initPlayerSchemas from "../schemas/gen.player.schema";
 import schemas from "fluent-json-schema";
-import { getMatchById, startMatch } from "../services/match.service";
-import ApiError, { ApiErrorCode } from "../utils/error.util";
-import { ISuccessResponse } from "../interfaces/response.interface";
-import { toCamelCase } from "../utils/case.util";
-import { env } from "../utils/environment";
+import {getMatchById, startMatch} from "../services/match.service";
+import ApiError, {ApiErrorCode} from "../utils/error.util";
+import {ISuccessResponse} from "../interfaces/response.interface";
+import {toCamelCase, toSnakeCase} from "../utils/case.util";
+import {env} from "../utils/environment";
 import WebsocketsManager from "../managers/websockets.manager";
-import { setInterval } from "node:timers";
+import {setInterval} from "node:timers";
 
 
 export function pongController(fastify: FastifyInstance, _options: any, done: () => void) {
 
-    fastify.put("/match/create", {
-        schema: {
-            body: schemas.object()
-                .prop("first_user", initPlayerSchemas)
-                .prop("second_user", initPlayerSchemas)
-                .prop("backend_token", schemas.string().required())
-        },
-        handler: async (request: FastifyRequest, reply: FastifyReply) => {
-            const body = toCamelCase(request.body);
-            if (body.backendToken !== env.BACKEND_TOKEN) throw new ApiError(ApiErrorCode.INSUFFICIENT_PERMISSIONS, "internal route");
+	fastify.put("/match", {
+		schema: {
+			body: schemas.object()
+				.prop("first_user", initPlayerSchemas)
+				.prop("second_user", initPlayerSchemas)
+				.prop("backend_token", schemas.string().required())
+		},
+		handler: async (request: FastifyRequest, reply: FastifyReply) => {
+			const body = toCamelCase(request.body);
+			if (body.backendToken !== env.BACKEND_TOKEN) throw new ApiError(ApiErrorCode.INSUFFICIENT_PERMISSIONS, "internal route");
 
-            const firstUser = toCamelCase(body.firstUser);
-            const secondUser = toCamelCase(body.secondUser);
+			const firstUser = toCamelCase(body.firstUser);
+			const secondUser = toCamelCase(body.secondUser);
 
-            const matchManager = MatchManager.getInstance();
+			const matchManager = MatchManager.getInstance();
 
-            if (matchManager.getMatchByPlayerId(firstUser.userId) || matchManager.getMatchByPlayer(secondUser.userId))
-                throw new ApiError(ApiErrorCode.DUPLICATE_RESOURCE, "One of these players is already in match");
+			if (matchManager.getMatchByPlayerId(firstUser.userId) || matchManager.getMatchByPlayer(secondUser.userId))
+				throw new ApiError(ApiErrorCode.DUPLICATE_RESOURCE, "One of these players is already in match");
 
-            const playerOne = matchManager.createPlayer(firstUser.userId, firstUser.isAi, firstUser.isTraining);
-            const playerTwo = matchManager.createPlayer(secondUser.userId, secondUser.isAi, secondUser.isTraining);
+			const playerOne = matchManager.createPlayer(firstUser.userId, firstUser.isAi, firstUser.isTraining);
+			const playerTwo = matchManager.createPlayer(secondUser.userId, secondUser.isAi, secondUser.isTraining);
 
-            const match = matchManager.createMatch(11, playerOne, playerTwo);
-            reply.send({ success: true, message: "The match has been created", data: match } as ISuccessResponse);
+			const match = matchManager.createMatch(11, playerOne, playerTwo);
+			reply.send({
+				success: true,
+				message: "The match has been created",
+				data: toSnakeCase(match)
+			} as ISuccessResponse);
 
-            let delay = 20;
-            const timer = setInterval(() => {
-                const isReady = match.getPlayersInMatch().every(p => p.ready);
-                if (isReady || delay-- <= 0) {
-                    startMatch(match);
-                    timer.close();
-                }
-            }, 1000);
-        }
-    });
+			let delay = 10;
+			const timer = setInterval(() => {
+				const isReady = match.getPlayersInMatch().every(p => p.ready);
+				if (isReady || delay-- <= 0) {
+					startMatch(match);
+					timer.close();
+				}
+			}, 1000);
+		}
+	});
 
-    fastify.get("/match/", {
-            schema: { params: schemas.object().prop("match_id", schemas.number().minimum(1).required()) },
-            handler: (request: FastifyRequest, reply: FastifyReply) => {
-                const body = toCamelCase(request.body);
-                const matchId: number = body.matchId;
-                const match = getMatchById(matchId);
-                if (!match) throw new ApiError(ApiErrorCode.MATCH_NOT_FOUND, "Impossible de trouver un match avec cet ID");
-                reply.send({
-                    success: true, data: {
-                        players: match.players.map(p => p.playerId),
-                        scores: match.players.map(p => p.score),
-                        is_paused: (match.isRunning && match.pausedAt !== -1)
-                    }
-                } as ISuccessResponse);
-            }
-        }
-    );
+	fastify.get("/match", {
+			schema: {params: schemas.object().prop("match_id", schemas.number().minimum(1).required())},
+			handler: (request: FastifyRequest, reply: FastifyReply) => {
+				const body = toCamelCase(request.body);
+				const matchId: number = body.matchId;
+				const match = getMatchById(matchId);
+				if (!match) throw new ApiError(ApiErrorCode.MATCH_NOT_FOUND, "Impossible de trouver un match avec cet ID");
+				reply.send({
+					success: true, data: {
+						players: match.players.map(p => p.playerId),
+						scores: match.players.map(p => p.score),
+						is_paused: (match.isRunning && match.pausedAt !== -1)
+					}
+				} as ISuccessResponse);
+			}
+		}
+	);
 
-    fastify.get("/matches", {
-            handler: (_request: FastifyRequest, reply: FastifyReply) => {
-                reply.send({ success: true, data: MatchManager.getInstance().countMatches() } as ISuccessResponse);
-            }
-        }
-    );
+	fastify.get("/matches", {
+			handler: (_request: FastifyRequest, reply: FastifyReply) => {
+				reply.send({success: true, data: MatchManager.getInstance().countMatches()} as ISuccessResponse);
+			}
+		}
+	);
 
-    fastify.get("/onlines", {
-            handler: (_request: FastifyRequest, reply: FastifyReply) => {
-                reply.send({ success: true, data: WebsocketsManager.getInstance().countConnections() } as ISuccessResponse);
-            }
-        }
-    );
+	fastify.get("/onlines", {
+			handler: (_request: FastifyRequest, reply: FastifyReply) => {
+				reply.send({success: true, data: WebsocketsManager.getInstance().countConnections()} as ISuccessResponse);
+			}
+		}
+	);
 
-    done();
+	done();
 }
