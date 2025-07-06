@@ -5,6 +5,7 @@ import axios from "axios";
 import {toCamelCase} from "../utils/case.util";
 import ApiError, {ApiErrorCode} from "../utils/error.util";
 import {env} from "../utils/environment";
+import {app} from "../app";
 
 
 export interface IPublicUser {
@@ -48,12 +49,14 @@ class AuthenticationMiddleware extends AMiddleware {
 	public async handleRequest(_app: FastifyInstance, request: FastifyRequest, response: FastifyReply): Promise<boolean> {
 		try {
 			request.publicUser = undefined;
+
 			if (!request.headers.cookie) throw new ApiError(ApiErrorCode.INVALID_TOKEN, "Pas de cookies recus");
 
 			const cookies = request.cookies;
 			if (cookies["BACKEND_TOKEN"]) {
 				const token = cookies["BACKEND_TOKEN"];
 				if (token !== env.BACKEND_TOKEN) throw new ApiError(ApiErrorCode.INSUFFICIENT_PERMISSIONS, "Invalid backend token.");
+				app.log.debug(`TOKEN = ${token}`)
 				request.publicUser = {
 					id: 0,
 					createdAt: Date.now(),
@@ -65,7 +68,6 @@ class AuthenticationMiddleware extends AMiddleware {
 				}
 				return true;
 			}
-
 			const decodeResponse = await axios.get("http://ft-transcendence-auth:3000/token/decode", {
 				headers: {
 					Cookie: request.headers.cookie || ""
