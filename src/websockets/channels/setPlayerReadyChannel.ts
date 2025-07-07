@@ -39,7 +39,7 @@ export function registerPlayerReadyChannel(): void {
 				}
 				playerSocket.send(JSON.stringify({
 					channel: "ready-player",
-					data: {player_id: playerId}
+					data: {user_id: playerId}
 				}))
 			})
 		}
