@@ -23,10 +23,9 @@ export function registerGetIaNeededData(): void {
     });
 }
 
-
 async function SendAiNeedsView(socket: WebSocket): Promise<void> {
     return new Promise((resolve, reject) => {
-        let payload: string = JSON.stringify(getAiNeeds())
+        let payload: string = JSON.stringify(getAiNeeds(socket))
         if (!payload) return reject(() => app.log.info("Error: No payload to send"));
         socket.send(payload)
         resolve();

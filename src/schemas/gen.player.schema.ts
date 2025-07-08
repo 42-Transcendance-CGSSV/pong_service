@@ -8,7 +8,7 @@ import schemas from "fluent-json-schema";
     // .additionalProperties(false);
 
 const initPlayerSchemas = schemas.object()
-    .prop("user_id", schemas.number().minimum(1).required())
+    .prop("user_id", schemas.number().minimum(0).required())
     .prop("is_ai", schemas.boolean().required())
     .prop("is_training", schemas.boolean().required())
 

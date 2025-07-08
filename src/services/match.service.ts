@@ -4,6 +4,8 @@ import Player from "../classes/Player";
 import {ScoreRegistryInterface} from "../interfaces/score.registry.interface";
 import {app, eventEmitter} from "../app";
 import {IErrorResponse, ISuccessResponse} from "../interfaces/response.interface";
+import WebsocketsManager from "../managers/websockets.manager";
+import type {WebSocket} from "ws";
 
 export function getMatchData(match_id: number): ISuccessResponse | IErrorResponse {
     const match = MatchManager.getInstance().getMatchById(match_id);
@@ -17,17 +19,16 @@ export function getMatchData(match_id: number): ISuccessResponse | IErrorRespons
     } as ISuccessResponse;
 }
 
-export function getAiNeeds(): AiNeeds[] | null {
-    const match: Match[] = Array.from(MatchManager.getInstance().matches.values())
-    const payload: AiNeeds[] = [];
-    if (!match) return null
-    match.forEach((m) => {
-        const needs = m.exportAiNeeds();
-        if (needs)
-            needs.forEach((n) => payload.push(n))
-    })
-    if (payload.length === 0) return null
-    return payload;
+export function getAiNeeds(socket: WebSocket): AiNeeds | null {
+    const userId = WebsocketsManager.getInstance().getUserIdFromSocket(socket);
+    if (!userId) return null;
+
+    const match: Match | null  = MatchManager.getInstance().getMatchByPlayerId(userId);
+    if (!match) return null;
+
+    const needs = match.exportAiNeeds();
+    if (!needs) return null
+    return needs;
 }
 
 export function gettainingData(): ScoreRegistryInterface[] | null {
