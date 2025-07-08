@@ -14,17 +14,13 @@ export default class MatchManager {
 	public constructor() {
 		setInterval(async () => {
 			for (const match of this.matches.values()) {
-				if (!match.isRunning) {
-					console.log(`Match ${match.matchId} is not running !`);
-					continue;
-				}
-				console.log(`Match ${match.matchId} is running !`);
-				console.log(`Players in match : ${match.getPlayersInMatch().length}`);
+				if (!match.isRunning) continue;
+
 				for (const playersInMatch of match.getPlayersInMatch()) {
 					const socket = WebsocketsManager.getInstance().getSocketFromUserId(playersInMatch.playerId);
 					if (!socket) {
 						match.winnerId = match.getOnlinePlayerInMatch().pop()!.getID();
-						endMatch(match);
+						endMatch(match, -1);
 						continue;
 					}
 					socket.send(JSON.stringify({
@@ -40,15 +36,6 @@ export default class MatchManager {
 
 	public static getInstance(): MatchManager {
 		return this.instance ? this.instance : (this.instance = new MatchManager());
-	}
-
-	public purgePlayer(playerId: number): void {
-		for (const player of this.matches.keys()) {
-			if (player.getID() === playerId) {
-				this.matches.delete(player);
-				break;
-			}
-		}
 	}
 
 	public createMatch(scoreGoal: number = 11, p1: Player, p2: Player): Match {

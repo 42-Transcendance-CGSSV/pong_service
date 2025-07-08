@@ -51,8 +51,7 @@ class Match implements MatchInterface {
 				this.isRunning = false;
 				this.endedAt = Date.now();
 				this.winnerId = player.playerId;
-				app.log.info(`Player ${player.playerId} won the match!`);
-				endMatch(this);
+				endMatch(this, this.winnerId);
 				return;
 			}
 		}
@@ -69,14 +68,10 @@ class Match implements MatchInterface {
 	}
 
 	public getOnlinePlayerInMatch(): Player[] {
-		const players: Player[] = [];
-		for (const player of this.players) {
+		return this.players.filter(player => {
 			const socket = WebsocketsManager.getInstance().getSocketFromUserId(player.playerId);
-			if (socket && (socket.isPaused || socket.readyState !== socket.OPEN))
-				continue;
-			players.push(player);
-		}
-		return players;
+			return socket && !socket.isPaused && socket.readyState === socket.OPEN;
+		});
 	}
 
 	public playerIsInMatch(player: Player): boolean {

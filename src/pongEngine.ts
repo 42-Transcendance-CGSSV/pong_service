@@ -26,15 +26,14 @@ class PongEngine {
             const deltaTime = currentTime - this.lastUpdate;
             if (deltaTime >= env.UPDATE_INTERVAL_MS) {
                 for (const match of MatchManager.getInstance().matches.values()) {
-                    // if (!match.isRunning) : TODO: UNCOMENT
-                    //     continue;
-
+                    if (!match.isRunning)
+                        continue;
                     match.ball.moveBall();
                     match.checkForWinner();
                 }
                 this.lastUpdate = currentTime;
             }
-        }, 17);//env.UPDATE_INTERVAL_MS);
+        }, 17);
     }
 
     public stopGameLoop(): void {
@@ -46,4 +45,3 @@ class PongEngine {
 }
 
 export default PongEngine;
-// export let Engine = new pongEngine();
