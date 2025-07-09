@@ -20,7 +20,8 @@ class Player implements PlayerInterface {
 	public ready: boolean;
 	public match: Match | null = null;
 
-	constructor(playerId: number, AI: boolean, isTraining: boolean) {
+	constructor(playerId: number, AI: boolean, isTraining: boolean, side:number) {
+		this.side = side;
 		this.playerId = playerId;
 		this.PaddleHeight = 0.1 * env.CANVAS_HEIGHT;
 		this.paddlePos = env.CANVAS_HEIGHT / 2 //- this.PaddleHeight / 2;
@@ -70,7 +71,8 @@ class Player implements PlayerInterface {
 		return {
 			playerId: this.getID(),
 			relativeY: normalizePosition(this.paddlePos + this.PaddleHeight / 2, env.CANVAS_HEIGHT, 0),
-			isTraining: this.isTraining
+			isTraining: this.isTraining,
+			side: this.side,
 		}
 	}
 
