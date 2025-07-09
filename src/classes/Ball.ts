@@ -233,7 +233,7 @@ class Ball implements BallInterface {
                 continue;
             }
             const nextBallVelocityY = Math.random() * this.ballVelocityY + 0.01;
-            if (1)//player.getSide() === 0)//TRAINING_MODE)
+            if (0)//player.getSide() === 0)//TRAINING_MODE)
             {
                 if (this.ballY < player.getPos())
                     player.moveUp();

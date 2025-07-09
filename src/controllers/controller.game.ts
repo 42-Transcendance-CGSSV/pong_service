@@ -45,15 +45,12 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
             let players: Player[] = match.getOnlinePlayerInMatch();
             const hasAI = players.some(p => p.AI);
             if (hasAI) {
-                playerOne.ready = true;
                 playerTwo.ready = true;
-                start(match, players);
-                return;
             }
 
             reply.send({
                 success: true,
-                message: hasAI ? "AI Match has been created !" : "The match has been created !",
+                message: hasAI ? "AI Match created successfully" : "The match has been created !",
                 data: toSnakeCase(match)
             } as ISuccessResponse);
 
@@ -62,8 +59,18 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
             const timer = setInterval(() => {
                 players = match.getOnlinePlayerInMatch();
                 if (players.length < 2) {
-                    app.log.info(`Match ${match.matchId} has ${players.length} players in match. ALT : ${match.getPlayersInMatch().length}`);
+                    app.log.debug(`Match ${match.matchId} has ${players.length} players in match. ALT : ${match.getPlayersInMatch().length}`);
                     return;
+                }
+
+                if (hasAI) {
+                    const playerSocket = WebsocketsManager.getInstance().getSocketFromUserId(playerOne.playerId);
+                    if (playerSocket) {
+                        playerSocket.send(JSON.stringify({
+                            channel: "ready-player",
+                            data: {user_id: playerTwo.playerId}
+                        }))
+                    }
                 }
 
                 const isReady = players.every(p => p.ready);
