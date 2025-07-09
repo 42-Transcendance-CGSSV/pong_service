@@ -16,17 +16,16 @@ export function registerGetIaNeededData(): void {
             if (intervalMap.has(socket)) {
                 clearInterval(intervalMap.get(socket));
                 intervalMap.delete(socket);
-                app.log.info("Cleared interval for ai needs data");
+                // app.log.info("Cleared interval for ai needs data");
             }
             intervalMap.set(socket, setInterval(async () => await SendAiNeedsView(socket), 1000 / env.TIME_MULTIPLIER));
         }
     });
 }
 
-
 async function SendAiNeedsView(socket: WebSocket): Promise<void> {
     return new Promise((resolve, reject) => {
-        let payload: string = JSON.stringify(getAiNeeds())
+        let payload: string = JSON.stringify(getAiNeeds(socket))
         if (!payload) return reject(() => app.log.info("Error: No payload to send"));
         socket.send(payload)
         resolve();

@@ -12,6 +12,7 @@ import WebsocketsManager from "../managers/websockets.manager";
 import {setInterval} from "node:timers";
 import Player from "../classes/Player";
 import {app} from "../app";
+import Match from "../classes/Match";
 
 
 export function pongController(fastify: FastifyInstance, _options: any, done: () => void) {
@@ -32,26 +33,39 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
 
             const matchManager = MatchManager.getInstance();
 
-            if (matchManager.getMatchByPlayerId(firstUser.userId) || matchManager.getMatchByPlayer(secondUser.userId))
-                throw new ApiError(ApiErrorCode.DUPLICATE_RESOURCE, "One of these players is already in match");
+            if (matchManager.getMatchByPlayerId(firstUser.userId) && !firstUser.isAi)
+                throw new ApiError(ApiErrorCode.DUPLICATE_RESOURCE, `${firstUser} is already in match`);
+            if (matchManager.getMatchByPlayer(secondUser.userId) && !secondUser.isAi)
+                throw new ApiError(ApiErrorCode.DUPLICATE_RESOURCE, `${secondUser} is already in match`);
 
             const playerOne = matchManager.createPlayer(firstUser.userId, firstUser.isAi, firstUser.isTraining);
             const playerTwo = matchManager.createPlayer(secondUser.userId, secondUser.isAi, secondUser.isTraining);
-
             const match = matchManager.createMatch(11, playerOne, playerTwo);
+
+            let players: Player[] = match.getOnlinePlayerInMatch();
+            const hasAI = players.some(p => p.AI);
+            if (hasAI) {
+                playerOne.ready = true;
+                playerTwo.ready = true;
+                start(match, players);
+                return;
+            }
+
             reply.send({
                 success: true,
-                message: "The match has been created",
+                message: hasAI ? "AI Match has been created !" : "The match has been created !",
                 data: toSnakeCase(match)
             } as ISuccessResponse);
 
+
             let delay = 35;
             const timer = setInterval(() => {
-                const players: Player[] = match.getOnlinePlayerInMatch();
+                players = match.getOnlinePlayerInMatch();
                 if (players.length < 2) {
                     app.log.info(`Match ${match.matchId} has ${players.length} players in match. ALT : ${match.getPlayersInMatch().length}`);
                     return;
                 }
+
                 const isReady = players.every(p => p.ready);
 
                 app.log.debug(`Match ${match.matchId} waiting for ${delay} seconds`);
@@ -73,21 +87,11 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
                         }))
                     })
                     if (delay === 0) {
-                        const response = startMatch(match);
-                        players.forEach((player: Player) => {
-                            const playerSocket = WebsocketsManager.getInstance().getSocketFromUserId(player.playerId);
-                            if (!playerSocket) return;
-                            playerSocket.send(JSON.stringify({
-                                channel: "game-started",
-                                data: {is_started: response.success}
-                            }))
-                        })
+                        start(match, players);
                         timer.close();
                         return;
                     }
                 }
-
-
             }, 1000);
         }
     });
@@ -125,4 +129,19 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
     );
 
     done();
+}
+
+function start(match: Match, players: Player[]) {
+    const response = startMatch(match);
+    if (response.success) {
+        players.forEach((player: Player) => {
+            const playerSocket = WebsocketsManager.getInstance().getSocketFromUserId(player.playerId);
+            if (!playerSocket) return;
+            playerSocket.send(JSON.stringify({
+                channel: "game-started",
+                data: {is_started: response.success}
+            }))
+        })
+    }
+    return response;
 }
