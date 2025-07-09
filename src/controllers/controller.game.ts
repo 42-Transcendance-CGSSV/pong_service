@@ -33,9 +33,10 @@ export function pongController(fastify: FastifyInstance, _options: any, done: ()
 
             const matchManager = MatchManager.getInstance();
 
-            if ((matchManager.getMatchByPlayerId(firstUser.userId) && !firstUser.isAi) ||
-                (matchManager.getMatchByPlayer(secondUser.userId) && !secondUser.isAi))
-                throw new ApiError(ApiErrorCode.DUPLICATE_RESOURCE, "One of these players is already in match");
+            if (matchManager.getMatchByPlayerId(firstUser.userId) && !firstUser.isAi)
+                throw new ApiError(ApiErrorCode.DUPLICATE_RESOURCE, `${firstUser} is already in match`);
+            if (matchManager.getMatchByPlayer(secondUser.userId) && !secondUser.isAi)
+                throw new ApiError(ApiErrorCode.DUPLICATE_RESOURCE, `${secondUser} is already in match`);
 
             const playerOne = matchManager.createPlayer(firstUser.userId, firstUser.isAi, firstUser.isTraining);
             const playerTwo = matchManager.createPlayer(secondUser.userId, secondUser.isAi, secondUser.isTraining);
