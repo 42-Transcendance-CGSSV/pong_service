@@ -18,7 +18,7 @@ import fastifyCookie from "@fastify/cookie";
 import fastifyWebsocket from "@fastify/websocket";
 import {registerPlayerReadyChannel} from "./websockets/channels/setPlayerReadyChannel";
 import {registerGameEndedListeners} from "./listeners/GameEndedListeners";
-import {registerAIMovePaddleChannel} from "./websockets/channels/movePaddleIAChannel";
+// import {registerAIMovePaddleChannel} from "./websockets/channels/movePaddleIAChannel";
 
 export const app = fastify({
     logger: {
@@ -66,7 +66,7 @@ async function start(): Promise<void> {
         registerMovePaddleChannel();
         registerTogglePauseMatchChannel();
         registerPlayerReadyChannel();
-        registerAIMovePaddleChannel();
+        // registerAIMovePaddleChannel();
         registerGameEndedListeners();
         app.log.info("Websocket processor is OK !");
 
