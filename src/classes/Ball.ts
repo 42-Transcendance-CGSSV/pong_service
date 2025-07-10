@@ -132,10 +132,10 @@ class Ball implements BallInterface {
         this.ballY += this.ballVelocityY * env.TIME_MULTIPLIER;
         // console.log("moving Ball position: ", this.ballX, this.ballY, "Ball speed: ", this.ballVelocityX, this.ballVelocityY);
 
-        this.backIntime();
         if (this.ballY - this.ballRadius <= 0 || this.ballY + this.ballRadius >= env.CANVAS_HEIGHT) {
             this.ballVelocityY = -this.ballVelocityY;
         }
+        this.backIntime();
         this.checkCollision();
     }
 
@@ -176,7 +176,28 @@ class Ball implements BallInterface {
     }
 
     public checkCollision(): void {
-        this.backIntime();
+        const playersInGame = MatchManager.getInstance().getPlayersByBall(this);
+        if (!playersInGame) {
+            return;
+        }
+        for (const player of playersInGame) {
+            if (!player) continue;
+            const nextBallVelocityY = Math.random() * this.ballVelocityY + 0.01;
+
+            if (player === this.lastToHit) continue;
+            if ((this.ballX >= env.CANVAS_WIDTH - player.getPaddleWidth()   && player.side === 1||
+                    this.ballX <= player.getPaddleWidth()                      && player.side === 0) &&
+                (this.ballY + this.ballRadius) > player.getPos() &&
+                (this.ballY - this.ballRadius) < player.getPos() + player.getPaddleHeight()) {
+                app.log.debug(player.getPos())
+                this.lastToHit = player;
+                this.ballVelocityX = -this.ballVelocityX;
+                this.ballVelocityY = Math.random() > 0.5 ? this.ballVelocityY + nextBallVelocityY : -this.ballVelocityY + nextBallVelocityY;
+                this.lastToHit = player;
+                player.battedBalls++;
+                break;
+            }
+        }
         if (this.ballX <= 0 || this.ballX >= env.CANVAS_WIDTH) {
             if (this.ballX >= env.CANVAS_WIDTH) {
                 SendAllowed.setAnswer(this.ballY, 0);
@@ -215,46 +236,37 @@ class Ball implements BallInterface {
                 this.ballY = CURRENT_TRAINING_POS.FPositionY += 20;
                 // this.ballVelocityY = Math.floor(Math.random() * 4 + 1);
             } else {
+                setTimeout(() => {
                 this.ballX = this.defaultValues.ballX;
                 this.ballY = this.defaultValues.ballY;
 
                 this.ballVelocityX = Math.random() > 0.5 ? this.ballVelocityX : -this.ballVelocityX;
                 this.ballVelocityY = Math.random() * this.ballVelocityY + 0.005;
+
+                }, 1000);
             }
             return;
         }
         // if (1) return;
-        const playersInGame = MatchManager.getInstance().getPlayersByBall(this);
-        if (!playersInGame) {
-            return;
-        }
 
-        for (const player of playersInGame) {
-            if (!player) continue;
-            const nextBallVelocityY = Math.random() * this.ballVelocityY + 0.01;
 
-            if (0)//player.getSide() === 0)//TRAINING_MODE)
-            {
-                if (this.ballY < player.getPos())
-                    player.moveUp();
-                else if (this.ballY > player.getPos() + player.getPaddleHeight())
-                    player.moveDown();
-            }
 
-            if (player === this.lastToHit) continue;
-            if (!(this.ballY > player.getPos() && this.ballY < player.getPos() + player.getPaddleHeight())) continue;
-
-            if ((player.getSide() === 0 && this.ballX - this.ballRadius < player.getPaddleWidth()) ||
-                (player.getSide() === 1 && this.ballX + this.ballRadius > env.CANVAS_WIDTH - player.getPaddleWidth())) {
-                this.lastToHit = player;
-                this.ballVelocityX = -this.ballVelocityX;
-                this.ballVelocityY = Math.random() > 0.5 ? this.ballVelocityY + nextBallVelocityY : -this.ballVelocityY + nextBallVelocityY;
-                this.lastToHit = player;
-                player.battedBalls++;
-                break;
-            }
-        }
     }
+
+    public ExportBallInfo() {
+        return {
+            ballRadius: this.ballRadius,
+            relativeBallX: normalizePosition(this.ballX, env.CANVAS_WIDTH, 0),
+            relativeBallY: normalizePosition(this.ballY, env.CANVAS_HEIGHT, 0),
+            ballSpeedY: this.ballVelocityY,
+            ballSpeedX: this.ballVelocityX,
+        };
+    }
+}
+
+export {SendAllowed};
+
+export default Ball;
 
     // public updateScoreRegistery(side :number): void {
     //     const playersInGame = MatchManager.getInstance().getPlayersByBall(this);
@@ -280,19 +292,3 @@ class Ball implements BallInterface {
     //         };
     //     }
     // }
-
-
-    public ExportBallInfo() {
-        return {
-            ballRadius: this.ballRadius,
-            relativeBallX: normalizePosition(this.ballX, env.CANVAS_WIDTH, 0),
-            relativeBallY: normalizePosition(this.ballY, env.CANVAS_HEIGHT, 0),
-            ballSpeedY: this.ballVelocityY,
-            ballSpeedX: this.ballVelocityX,
-        };
-    }
-}
-
-export {SendAllowed};
-
-export default Ball;

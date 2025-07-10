@@ -36,6 +36,7 @@ class Player implements PlayerInterface {
 	}
 
 	public moveUp() {
+
 		if (this.paddlePos > 0)
 			this.paddlePos -= this.getMoveSpeed();
 	};
