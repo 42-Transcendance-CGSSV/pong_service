@@ -105,7 +105,7 @@ export function startMatch(match: Match): ISuccessResponse | IErrorResponse {
 export function endMatch(match: Match, winnerId: number): void {
     if (!match) return;
 
-    match.startedAt = -1;
+    match.endedAt = Date.now();
     match.isRunning = false;
 
     app.log.debug("Game " + match.matchId + " ended")

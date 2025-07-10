@@ -32,7 +32,6 @@ function SendAiNeedsView(socket: WebSocket): void {
         return;
     }
     socket.send(payload)
-    app.log.debug("Sent payload on get-ia-needs-data")
 }
 
 

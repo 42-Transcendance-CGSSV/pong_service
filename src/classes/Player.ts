@@ -2,9 +2,7 @@ import {env} from '../utils/environment';
 import PlayerInterface from '../interfaces/player.interface';
 import {normalizePosition} from "../utils/maths";
 import {ScoreRegistryInterface} from "../interfaces/score.registry.interface";
-import Match from './Match';
 import {app} from "../app";
-
 
 class Player implements PlayerInterface {
 	public readonly AI: boolean = true;
@@ -13,14 +11,15 @@ class Player implements PlayerInterface {
 	public paddlePos: number;
 	public readonly PaddleWidth: number;
 	public readonly PaddleHeight: number;
-	public side: number = 0;
-	public score: number = 0;
-	public currentMatchId: number = -1;
+	public side: number;
+	public score: number;
+	public currentMatchId;
 	public readonly playerId: number;
 	public ready: boolean;
-	public match: Match | null = null;
+	public battedBalls: number;
 
-	constructor(playerId: number, AI: boolean, isTraining: boolean, side:number) {
+
+	public constructor(playerId: number, AI: boolean, isTraining: boolean, side:number) {
 		this.side = side;
 		this.playerId = playerId;
 		this.PaddleHeight = 0.1 * env.CANVAS_HEIGHT;
@@ -29,6 +28,9 @@ class Player implements PlayerInterface {
 		this.AI = AI;
 		this.isTraining = isTraining;
 		this.ready = false;
+		this.battedBalls = 0;
+		this.currentMatchId = -1;
+		this.score = 0;
 		if (env.TIME_MULTIPLIER !== 1)
 			app.log.warn("Player: WARNING TIME MULTIPLIER SET TO ", env.TIME_MULTIPLIER)
 	}
@@ -62,6 +64,8 @@ class Player implements PlayerInterface {
 	public getSide() {
 		return this.side;
 	}
+
+
 
 	public ExportPlayerInfo() {
 		return {...this, relativeY: normalizePosition(this.paddlePos + this.PaddleHeight / 2, env.CANVAS_HEIGHT, 0)};
