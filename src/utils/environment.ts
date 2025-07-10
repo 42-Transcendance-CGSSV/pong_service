@@ -22,5 +22,6 @@ export const env = {
     PLAYER_PADDLE_WIDTH: Number(process.env.PLAYER_PADDLE_WIDTH) || 10,
 
     BACKEND_TOKEN: process.env.BACKEND_TOKEN || "default_token",
+    IP: process.env.IP || "127.0.0.1",
 };
 

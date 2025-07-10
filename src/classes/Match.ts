@@ -2,7 +2,6 @@ import MatchInterface from "../interfaces/matchInterface";
 import Ball from "./Ball";
 import Player from "./Player";
 import {ScoreRegistryInterface} from "../interfaces/score.registry.interface";
-import {app} from "../app";
 import MatchManager from "../managers/match.manager";
 import {endMatch} from "../services/match.service";
 import WebsocketsManager from "../managers/websockets.manager";
@@ -30,8 +29,6 @@ class Match implements MatchInterface {
     public endedAt: number;
     public winnerId: number;
 
-    public interval: NodeJS.Timeout | null = null;
-
     public constructor(scoreGoal: number) {
         this.matchId = ++MatchManager.getInstance().matchCounter;
         this.scoreGoal = scoreGoal;
@@ -49,7 +46,6 @@ class Match implements MatchInterface {
         for (const player of this.players) {
             if (player.score >= this.scoreGoal) {
                 this.isRunning = false;
-                this.endedAt = Date.now();
                 this.winnerId = player.playerId;
                 endMatch(this, this.winnerId);
                 return;
@@ -130,38 +126,6 @@ class Match implements MatchInterface {
             ret = player.map((player: Player) => player.trainingData)
         }
         return ret;
-    }
-
-
-    public pushPlayer(player: Player): boolean {
-        if (!player) return false;
-        if (player && player.currentMatchId !== -1) {
-            app.log.error(`Player ${player.playerId} is not valid.`);
-            return false;
-        }
-        if (player && this.players.some(p => p.playerId === player.playerId)) {
-            app.log.info(`Player ${player.playerId} is already in the match.`);
-            return false;
-        }
-        if (player && this.players.length >= 2) {
-            app.log.info(`Match ${this.matchId} is already full.`);
-            return false;
-        }
-        this.players.push(player);
-        player.match = this;
-        player.currentMatchId = this.matchId;
-        // if (!player.designatedNextMatch) {
-        //     player.designatedNextMatch = [];
-        // }
-        app.log.info(`Player ${player.playerId} has joined match ${this.matchId}.`);
-        if (this.players.length === 1) {
-            app.log.info(`Match ${this.matchId} waiting for second player.`);
-            return true;
-        }
-        if (this.players.length === 2 && !this.interval) {
-            app.log.info(`Match ${this.matchId} has enough players to start monitoring.`);
-        }
-        return false;
     }
 }
 

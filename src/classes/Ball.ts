@@ -190,6 +190,7 @@ class Ball implements BallInterface {
                 app.log.debug(`player ${this.lastToHit.playerId} scored :${this.lastToHit.score}`);
                 this.lastToHit = undefined;
             }
+
             if (TRAINING_MODE) {
                 this.ballVelocityX = -this.ballVelocityX;
                 if (CURRENT_TRAINING_POS.FPositionX > env.CANVAS_WIDTH - 0.1 * env.CANVAS_WIDTH) {
@@ -229,10 +230,9 @@ class Ball implements BallInterface {
         }
 
         for (const player of playersInGame) {
-            if (!player) {
-                continue;
-            }
+            if (!player) continue;
             const nextBallVelocityY = Math.random() * this.ballVelocityY + 0.01;
+
             if (0)//player.getSide() === 0)//TRAINING_MODE)
             {
                 if (this.ballY < player.getPos())
@@ -241,33 +241,16 @@ class Ball implements BallInterface {
                     player.moveDown();
             }
 
-            if (player !== this.lastToHit &&
-                player.getSide() === 0 &&
-                this.ballX - this.ballRadius < player.getPaddleWidth() &&
-                this.ballY > player.getPos() &&
-                this.ballY < player.getPos() + player.getPaddleHeight()) {
-                // this.ballVelocityX = this.raiseBallSpeed(this.ballVelocityX, "-") ;Math.floor(Math.random() * this.ballVelocityY + 0.01)
-                this.ballVelocityX = -this.ballVelocityX;
-                // this.ballVelocityY = this.raiseBallSpeed(this.ballVelocityY, "+") ;
-                this.ballVelocityY = Math.random() > 0.5 ? this.ballVelocityY + nextBallVelocityY : -this.ballVelocityY + nextBallVelocityY;
-                this.lastToHit = player;
-                // console.log("left",this.ballVelocityX, this.ballVelocityY);
-                break;
-            }
-            if (player !== this.lastToHit &&
-                player.getSide() === 1 &&
-                this.ballX + this.ballRadius > env.CANVAS_WIDTH - player.getPaddleWidth() &&
-                this.ballY > player.getPos() &&
-                this.ballY < player.getPos() + player.getPaddleHeight()) {
-                // SendAllowed.setAnswer(this.ballY, 0);
+            if (player === this.lastToHit) continue;
+            if (!(this.ballY > player.getPos() && this.ballY < player.getPos() + player.getPaddleHeight())) continue;
 
-                // console.log("right A ",this.ballVelocityX, this.ballVelocityY);
-                this.ballVelocityX = -this.ballVelocityX;
-                // this.raiseBallSpeed(this.ballVelocityY, "+") ;
-                this.ballVelocityY = Math.random() > 0.5 ? this.ballVelocityY + nextBallVelocityY : -this.ballVelocityY + nextBallVelocityY;
-                // this.ballVelocityY = this.ballVelocityY > 0 ? this.ballVelocityY : -this.ballVelocityY;
+            if ((player.getSide() === 0 && this.ballX - this.ballRadius < player.getPaddleWidth()) ||
+                (player.getSide() === 1 && this.ballX + this.ballRadius > env.CANVAS_WIDTH - player.getPaddleWidth())) {
                 this.lastToHit = player;
-                // console.log("right ",this.ballVelocityX, this.ballVelocityY);
+                this.ballVelocityX = -this.ballVelocityX;
+                this.ballVelocityY = Math.random() > 0.5 ? this.ballVelocityY + nextBallVelocityY : -this.ballVelocityY + nextBallVelocityY;
+                this.lastToHit = player;
+                player.battedBalls++;
                 break;
             }
         }
