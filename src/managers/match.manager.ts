@@ -48,8 +48,8 @@ export default class MatchManager {
         return match;
     }
 
-    public createPlayer(userId: number, isAI: boolean, isTraining: boolean): Player {
-        return new Player(userId, isAI, isTraining);
+    public createPlayer(userId: number, isAI: boolean, isTraining: boolean, side:number): Player {
+        return new Player(userId, isAI, isTraining, side);
     }
 
     public removeMatch(match: Match): void {
