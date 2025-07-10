@@ -64,7 +64,7 @@ export function registerGameEndedListeners() {
 function sendMatchStats(match: Match, players: Player[]): void {
     const isAiMatch = players[0].AI || players[1].AI;
     const matchStats: GameEndStats = {
-        matchMode: isAiMatch ? "ai" : "normal",
+        matchMode: isAiMatch ? "AI" : "NORMAL",
         player1Id: isAiMatch ? (players[0].AI ? 0 : players[0].playerId) : players[0].playerId,
         player2Id: isAiMatch ? (players[1].AI ? 0 : players[1].playerId) : players[1].playerId,
         player1Score: players[0].score,
@@ -74,12 +74,10 @@ function sendMatchStats(match: Match, players: Player[]): void {
         duration: (match.endedAt - match.startedAt) / 1000,
         date: match.startedAt.toString()
     }
-    app.log.debug(`sending match stats: ${JSON.stringify(matchStats)}`);
-    app.log.debug(`sending match stats url: http://ft-transcendence-match-history:3004/full`);
     const agent = new https.Agent({
         rejectUnauthorized: false
     });
-    axios.post(`http://ft-transcendence-match-history:3004/match/full`, matchStats, { httpsAgent: agent }).then(() => {
+    axios.post(`http://ft-transcendence-match-history:3004/match/full`, matchStats, {httpsAgent: agent}).then(() => {
         app.log.info("Match stats sent successfully !");
     }).catch(err => {
         app.log.error(`Unable to post match stats: ${err}`);
