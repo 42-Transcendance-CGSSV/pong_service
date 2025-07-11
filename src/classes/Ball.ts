@@ -236,14 +236,14 @@ class Ball implements BallInterface {
                 this.ballY = CURRENT_TRAINING_POS.FPositionY += 20;
                 // this.ballVelocityY = Math.floor(Math.random() * 4 + 1);
             } else {
-                setTimeout(() => {
+                // setTimeout(() => {
                 this.ballX = this.defaultValues.ballX;
                 this.ballY = this.defaultValues.ballY;
 
                 this.ballVelocityX = Math.random() > 0.5 ? this.ballVelocityX : -this.ballVelocityX;
                 this.ballVelocityY = Math.random() * this.ballVelocityY + 0.005;
 
-                }, 1000);
+                // }, 1000);
             }
             return;
         }
