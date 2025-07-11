@@ -17,6 +17,7 @@ class Player implements PlayerInterface {
 	public readonly playerId: number;
 	public ready: boolean;
 	public battedBalls: number;
+	public shouldBeAt: number | null = null;
 
 
 	public constructor(playerId: number, AI: boolean, isTraining: boolean, side:number) {

@@ -62,11 +62,12 @@ export function registerGameEndedListeners() {
 }
 
 function sendMatchStats(match: Match, players: Player[]): void {
-    const isAiMatch = players[0].AI || players[1].AI;
+    const isp1ai = players[0]?.AI;
+    const isp2ai = players[1]?.AI;
     const matchStats: GameEndStats = {
-        matchMode: isAiMatch ? "AI" : "NORMAL",
-        player1Id: isAiMatch ? (players[0].AI ? 0 : players[0].playerId) : players[0].playerId,
-        player2Id: isAiMatch ? (players[1].AI ? 0 : players[1].playerId) : players[1].playerId,
+        matchMode: isp1ai || isp2ai ? "AI" : "NORMAL",
+        player1Id: isp1ai ? (players[0].AI ? 0 : players[0].playerId) : players[0].playerId,
+        player2Id: isp2ai ? (players[1].AI ? 0 : players[1].playerId) : players[1].playerId,
         player1Score: players[0].score,
         player2Score: players[1].score,
         player1BattedBalls: players[0].battedBalls,

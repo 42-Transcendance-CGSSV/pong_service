@@ -97,6 +97,8 @@ class Ball implements BallInterface {
     public ballVelocityY: number;
     public ballRadius: number;
     public lastToHit                ?: Player;
+    // public
+
     private readonly defaultValues: defaultValues = {
         ballX: env.CANVAS_WIDTH / 2,
         ballY: env.CANVAS_HEIGHT / 2,
@@ -189,8 +191,9 @@ class Ball implements BallInterface {
                     this.ballX <= player.getPaddleWidth()                      && player.side === 0) &&
                 (this.ballY + this.ballRadius) > player.getPos() &&
                 (this.ballY - this.ballRadius) < player.getPos() + player.getPaddleHeight()) {
-                app.log.debug(player.getPos())
+                app.log.debug(`player poss ${player.getPos()} id ${player.getID()}`)
                 this.lastToHit = player;
+                player.shouldBeAt = null
                 this.ballVelocityX = -this.ballVelocityX;
                 this.ballVelocityY = Math.random() > 0.5 ? this.ballVelocityY + nextBallVelocityY : -this.ballVelocityY + nextBallVelocityY;
                 this.lastToHit = player;
@@ -200,11 +203,10 @@ class Ball implements BallInterface {
         }
         if (this.ballX <= 0 || this.ballX >= env.CANVAS_WIDTH) {
             if (this.ballX >= env.CANVAS_WIDTH) {
-                SendAllowed.setAnswer(this.ballY, 0);
+                const ai = playersInGame.find((p) => p.AI)
+                if (ai)
+                    ai.shouldBeAt = this.ballY;
             }
-            // console.log("Ball position: ", this.ballX, this.ballY, "Ball speed: ", this.ballVelocityX, this.ballVelocityY);
-            // this.updateScoreRegistery(this.ballX < 0 ? 0 : 1);
-
 
             if (this.lastToHit) {
                 this.lastToHit.score++;
@@ -212,39 +214,12 @@ class Ball implements BallInterface {
                 this.lastToHit = undefined;
             }
 
-            if (TRAINING_MODE) {
-                this.ballVelocityX = -this.ballVelocityX;
-                if (CURRENT_TRAINING_POS.FPositionX > env.CANVAS_WIDTH - 0.1 * env.CANVAS_WIDTH) {
-                    CURRENT_TRAINING_POS.FPositionX = 3;
-                }
-                if (CURRENT_TRAINING_POS.FPositionY > env.CANVAS_HEIGHT - 0.1 * env.CANVAS_HEIGHT) {
-                    CURRENT_TRAINING_POS.FPositionY = 0;
-                    CURRENT_TRAINING_POS.FPositionX += 0.5;
-                }
-                // if ()
-                this.ballX = CURRENT_TRAINING_POS.FPositionX;
-                this.ballY = CURRENT_TRAINING_POS.FPositionY;
-                this.ballVelocityX = CURRENT_TRAINING_POS.FSpeedX;
-                this.ballVelocityY = CURRENT_TRAINING_POS.FSpeedY;
-                SendAllowed.setInfo(
-                    this.ballX < 0 ? 0 : 1,
-                    this.ballX,
-                    this.ballY,
-                    this.ballVelocityX,
-                    this.ballVelocityY,
-                );
-                this.ballY = CURRENT_TRAINING_POS.FPositionY += 20;
-                // this.ballVelocityY = Math.floor(Math.random() * 4 + 1);
-            } else {
-                // setTimeout(() => {
-                this.ballX = this.defaultValues.ballX;
-                this.ballY = this.defaultValues.ballY;
+            this.ballX = this.defaultValues.ballX;
+            this.ballY = this.defaultValues.ballY;
 
-                this.ballVelocityX = Math.random() > 0.5 ? this.ballVelocityX : -this.ballVelocityX;
-                this.ballVelocityY = Math.random() * this.ballVelocityY + 0.005;
+            this.ballVelocityX = Math.random() > 0.5 ? this.ballVelocityX : -this.ballVelocityX;
+            this.ballVelocityY = Math.random() * this.ballVelocityY + 0.005;
 
-                // }, 1000);
-            }
             return;
         }
         // if (1) return;

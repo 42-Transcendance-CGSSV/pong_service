@@ -101,20 +101,17 @@ class Match implements MatchInterface {
     // PaddleHeight: number,
     // mySide: number
 
-    public exportAiNeeds(): AiNeeds | null {
+    public exportAiNeeds(): any  {
         const player: Player | undefined = this.players.filter(Player => Player.AI)[0];
         if (!player) return null;
 
         return {
-            playerID: player.playerId,
-            myScore: player.score,
             ballX: this.ball.ExportBallInfo().relativeBallX,
             ballY: this.ball.ExportBallInfo().relativeBallY,
             ballSpeedX: this.ball.ExportBallInfo().ballSpeedX,
             ballSpeedY: this.ball.ExportBallInfo().ballSpeedY,
             myPosition: player.ExportRenderInfo().relativeY,
-            isTraining: player.isTraining,
-            mySide: player.side
+            shouldBeAt: player.shouldBeAt
         };
     }
 
